@@ -1,6 +1,6 @@
 :root {
     /* Warm Gray Color Palette - Light Mode (Default) */
-    --bg-color: #f8f6f3;
+    --bg-color: linear-gradient(135deg, var(--hinana-yellow-light), var(--noctchill-sky));
     --card-bg: #ffffff;
     --text-primary: #2d2d2d;
     --text-secondary: #666666;
@@ -9,6 +9,13 @@
     --hover-shadow: rgba(0, 0, 0, 0.12);
     --skill-bg: rgba(124, 140, 156, 0.1);
     --skill-text: #5a6e7c;
+    
+    /* Hinana × noctchill Theme Colors - Light Mode */
+    --hinana-yellow: #FFF9D0;
+    --hinana-yellow-light: #FFFEF5;
+    --noctchill-blue: #92B2FF;
+    --noctchill-sky: #8AD3FF;
+    --noctchill-glow: #B6FFFD;
     
     /* Spacing & Sizing */
     --spacing-xs: 4px;
@@ -48,7 +55,7 @@
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background-color: var(--bg-color);
+    background: var(--bg-color);
     color: var(--text-primary);
     line-height: 1.6;
     min-height: 100vh;
@@ -56,7 +63,7 @@ body {
     flex-direction: column;
     align-items: center;
     padding: var(--spacing-lg) var(--spacing-md);
-    transition: background-color 0.3s ease, color 0.3s ease;
+    transition: background 0.3s ease, color 0.3s ease;
     /* iOS Safe Area Support */
     padding-top: max(var(--spacing-lg), env(safe-area-inset-top));
     padding-bottom: max(var(--spacing-lg), env(safe-area-inset-bottom));
