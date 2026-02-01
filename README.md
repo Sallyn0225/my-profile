@@ -9,6 +9,8 @@
 - 响应式布局：手机 / 平板 / 桌面均可正常显示
 - 自动深浅色模式：跟随系统设置（`prefers-color-scheme`）
 - 动画与交互：入场动画、链接卡片悬停动效、头像微视差效果
+- 背景效果：波浪背景动画、星星闪烁（桌面端鼠标交互 / 移动端自动）
+- 暗色模式：夜间海洋风格（夜光虫配色）
 - 可访问性：支持 `prefers-reduced-motion`（减少动态效果）
 - SEO：基础 meta + Open Graph + Twitter Card
 
@@ -30,6 +32,8 @@
 python -m http.server 4173
 ```
 
+建议使用 HTTP server 预览（不要用 `file://` 直接打开），避免相对资源加载不一致。
+
 然后访问：
 
 ```text
@@ -38,13 +42,13 @@ http://localhost:4173
 
 ## 部署到 Cloudflare Pages
 
-1. 将本仓库推送到 GitHub（已完成）
+1. 将本仓库推送到 GitHub
 2. Cloudflare Dashboard → **Pages** → **Create a project** → **Connect to Git**
 3. 选择该仓库
 4. 构建设置：
    - Framework preset：**None**
    - Build command：留空
-   - Build output directory：`/` 或 `.`
+   - Build output directory：`.`（推荐；仓库根目录）
 5. 点击 **Save and Deploy**
 
 部署完成后 Cloudflare 会提供一个 `*.pages.dev` 域名。
