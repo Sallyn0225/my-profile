@@ -1,0 +1,60 @@
+# my-profile
+
+一个可直接部署到 **Cloudflare Pages** 的 Linktree 风格个人展示页（纯 HTML / CSS / JS）。
+
+在线效果：部署到 Cloudflare Pages 后，你会获得一个 `*.pages.dev` 域名。
+
+## 功能
+
+- 响应式布局：手机 / 平板 / 桌面均可正常显示
+- 自动深浅色模式：跟随系统设置（`prefers-color-scheme`）
+- 动画与交互：入场动画、链接卡片悬停动效、头像微视差效果
+- 可访问性：支持 `prefers-reduced-motion`（减少动态效果）
+- SEO：基础 meta + Open Graph + Twitter Card
+
+## 目录结构
+
+```text
+.
+├── index.html    # 页面结构与内容
+├── styles.css    # 样式、主题、响应式
+├── script.js     # 交互逻辑（入场动画/视差）
+└── avatar.jpg    # 头像（请保持文件名不变，或同步改 index.html）
+```
+
+## 本地预览
+
+在项目根目录运行：
+
+```bash
+python -m http.server 4173
+```
+
+然后访问：
+
+```text
+http://localhost:4173
+```
+
+## 部署到 Cloudflare Pages
+
+1. 将本仓库推送到 GitHub（已完成）
+2. Cloudflare Dashboard → **Pages** → **Create a project** → **Connect to Git**
+3. 选择该仓库
+4. 构建设置：
+   - Framework preset：**None**
+   - Build command：留空
+   - Build output directory：`/` 或 `.`
+5. 点击 **Save and Deploy**
+
+部署完成后 Cloudflare 会提供一个 `*.pages.dev` 域名。
+
+## 自定义内容
+
+- 修改社交链接 / 文案：编辑 `index.html`
+- 修改配色与动画：编辑 `styles.css`
+- 修改交互逻辑：编辑 `script.js`
+
+## 依赖
+
+- [Font Awesome](https://fontawesome.com/)（通过 CDN 引入，用于社交平台图标）
