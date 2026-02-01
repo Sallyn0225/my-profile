@@ -32,16 +32,41 @@
 
 @media (prefers-color-scheme: dark) {
     :root {
-        /* Warm Gray Color Palette - Dark Mode */
-        --bg-color: #1c1c1e;
-        --card-bg: #2c2c2e;
-        --text-primary: #e5e5e5;
-        --text-secondary: #a0a0a0;
-        --accent-color: #8da1b3;
-        --shadow-color: rgba(0, 0, 0, 0.3);
-        --hover-shadow: rgba(0, 0, 0, 0.5);
-        --skill-bg: rgba(141, 161, 179, 0.2);
-        --skill-text: #b8cad6;
+        /* Noctchill Bioluminescent Theme - Dark Mode */
+        --bg-color: linear-gradient(135deg, #0A1628, #1A3A5C);
+        --card-bg: #1A3A5C;
+        --text-primary: #E8F4F8;
+        --text-secondary: #A8C5D0;
+        --accent-color: #71FFF1;
+        --shadow-color: rgba(0, 0, 0, 0.4);
+        --hover-shadow: rgba(113, 255, 241, 0.2);
+        --skill-bg: rgba(113, 255, 241, 0.15);
+        --skill-text: #B6FFFD;
+
+        /* Hinana × noctchill Theme Colors - Dark Mode */
+        --hinana-yellow: #3D3A2E;
+        --hinana-yellow-light: #2A2820;
+        --noctchill-blue: #4A6CB3;
+        --noctchill-sky: #3A8BC2;
+        --noctchill-glow: #71FFF1;
+
+        /* Wave Colors - Dark Mode */
+        --wave-color-1: #1A3A5C;
+        --wave-color-2: #0D4A6B;
+        --wave-color-3: #0A1628;
+    }
+
+    /* Wave Layers - Dark Mode Overrides */
+    .layer1 {
+        fill: var(--wave-color-1);
+    }
+
+    .layer2 {
+        fill: var(--wave-color-2);
+    }
+
+    .layer3 {
+        fill: var(--wave-color-3);
     }
 }
 
