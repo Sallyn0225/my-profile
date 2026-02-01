@@ -74,6 +74,39 @@ header, main, footer {
     width: 100%;
     max-width: var(--max-width);
     text-align: center;
+    position: relative;
+    z-index: 1;
+}
+
+/* Star Particles */
+.stars-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+}
+
+.star {
+    position: absolute;
+    background-color: var(--noctchill-glow);
+    border-radius: 50%;
+    opacity: 0.2;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    box-shadow: 0 0 4px var(--noctchill-glow);
+}
+
+@keyframes twinkle {
+    0%, 100% { opacity: 0.2; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.2); }
+}
+
+.star.twinkle {
+    animation: twinkle var(--twinkle-duration, 3s) infinite ease-in-out;
+    animation-delay: var(--twinkle-delay, 0s);
 }
 
 main {
@@ -219,6 +252,55 @@ footer {
         opacity: 1;
         transform: translate3d(0, 0, 0);
     }
+}
+
+@keyframes wave-flow {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+.bg-effects {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.waves {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 200%;
+    height: 25vh;
+    min-height: 150px;
+}
+
+.wave-layer {
+    fill-opacity: 0.4;
+    will-change: transform;
+}
+
+.layer1 {
+    fill: var(--hinana-yellow-light);
+    animation: wave-flow 12s cubic-bezier(0.36, 0.45, 0.63, 0.53) infinite;
+}
+
+.layer2 {
+    fill: var(--noctchill-sky);
+    animation: wave-flow 10s cubic-bezier(0.36, 0.45, 0.63, 0.53) infinite;
+    animation-delay: -2s;
+    opacity: 0.6;
+}
+
+.layer3 {
+    fill: var(--noctchill-blue);
+    animation: wave-flow 8s cubic-bezier(0.36, 0.45, 0.63, 0.53) infinite;
+    animation-delay: -4s;
+    opacity: 0.3;
 }
 
 .fade-in {

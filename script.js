@@ -91,12 +91,116 @@
   }
 
   /**
+   * Initialize Star Particles System
+   * Creates up to 50 stars with interactive/ambient behavior
+   */
+  function initStarParticles() {
+    // Skip if user prefers reduced motion
+    if (prefersReducedMotion) {
+      console.log('Star particles skipped (prefers-reduced-motion)');
+      return;
+    }
+
+    const container = document.querySelector('.stars-container');
+    if (!container) {
+      console.warn('Stars container not found');
+      return;
+    }
+
+    const MAX_STARS = 50;
+    const isMobile = 'ontouchstart' in window || window.matchMedia('(max-width: 768px)').matches;
+    const stars = [];
+    let isPaused = false;
+    let mouseX = -1000;
+    let mouseY = -1000;
+
+    // Create stars
+    for (let i = 0; i < MAX_STARS; i++) {
+      const star = document.createElement('div');
+      star.className = 'star';
+      
+      // Random position
+      const x = Math.random() * 100;
+      const y = Math.random() * 100;
+      star.style.left = `${x}%`;
+      star.style.top = `${y}%`;
+      
+      // Random size
+      const size = Math.random() * 2 + 1; // 1-3px
+      star.style.width = `${size}px`;
+      star.style.height = `${size}px`;
+
+      if (isMobile) {
+        // Mobile: CSS animation for twinkling
+        star.classList.add('twinkle');
+        star.style.setProperty('--twinkle-duration', `${Math.random() * 3 + 2}s`);
+        star.style.setProperty('--twinkle-delay', `${Math.random() * 5}s`);
+      }
+
+      container.appendChild(star);
+      
+      stars.push({
+        element: star,
+        x: x, // percentage
+        y: y, // percentage
+        baseOpacity: 0.2
+      });
+    }
+
+    // Desktop: Mouse interaction loop
+    if (!isMobile) {
+      document.addEventListener('mousemove', (e) => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+      });
+
+      function updateStars() {
+        if (isPaused) return;
+
+        stars.forEach(star => {
+          // Get star position in pixels
+          const starRect = star.element.getBoundingClientRect();
+          const starX = starRect.left + starRect.width / 2;
+          const starY = starRect.top + starRect.height / 2;
+
+          // Calculate distance to mouse
+          const dx = mouseX - starX;
+          const dy = mouseY - starY;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+
+          // Calculate brightness based on distance (radius 200px)
+          let brightness = star.baseOpacity;
+          if (distance < 200) {
+            const proximity = 1 - (distance / 200);
+            brightness = star.baseOpacity + (proximity * 0.8); // Max opacity ~1.0
+          }
+
+          star.element.style.opacity = brightness;
+        });
+
+        requestAnimationFrame(updateStars);
+      }
+
+      // Start loop
+      requestAnimationFrame(updateStars);
+    }
+
+    // Pause on visibility change
+    document.addEventListener('visibilitychange', () => {
+      isPaused = document.hidden;
+    });
+
+    console.log(`Initialized ${MAX_STARS} star particles (${isMobile ? 'Mobile' : 'Desktop'} mode)`);
+  }
+
+  /**
    * Initialize all interactions
    */
   function init() {
     try {
       initEntranceAnimations();
       initParallaxEffect();
+      initStarParticles();
     } catch (error) {
       console.error('Error initializing interactions:', error);
     }
