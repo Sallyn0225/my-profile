@@ -194,6 +194,96 @@
   }
 
   /**
+   * Initialize Shooting Star / Meteor System
+   * Spawns a meteor about every ~10s (randomized 8-12s).
+   * Direction: right-up -> left-down
+   */
+  function initMeteors() {
+    // Skip if user prefers reduced motion
+    if (prefersReducedMotion) {
+      console.log('Meteors skipped (prefers-reduced-motion)');
+      return;
+    }
+
+    const container = document.querySelector('.stars-container');
+    if (!container) {
+      console.warn('Stars container not found (meteors)');
+      return;
+    }
+
+    let timerId = null;
+    let isPaused = document.hidden;
+
+    function clearNext() {
+      if (timerId !== null) {
+        window.clearTimeout(timerId);
+        timerId = null;
+      }
+    }
+
+    function spawnMeteor() {
+      const meteor = document.createElement('div');
+      meteor.className = 'meteor';
+
+      // Random start position (top-right area)
+      // X: 80vw to 120vw (mostly right side)
+      // Y: -20vh to 30vh (top area)
+      const startX = Math.random() * 40 + 80; // 80..120vw
+      const startY = Math.random() * 50 - 20; // -20..30vh
+      
+      meteor.style.setProperty('--start-x', `${startX}vw`);
+      meteor.style.setProperty('--start-y', `${startY}vh`);
+      
+      // Randomize angle slightly around -45deg
+      const angle = -45 + (Math.random() * 10 - 5); // -50 to -40
+      meteor.style.setProperty('--angle', `${angle}deg`);
+
+      // Randomize duration/size for natural feel
+      const durationMs = 2000 + Math.random() * 1000; // 2s - 3s (slower is more majestic)
+      const widthPx = 150 + Math.random() * 150; // 150..300px
+      meteor.style.setProperty('--meteor-duration', `${durationMs}ms`);
+      meteor.style.setProperty('--meteor-width', `${widthPx}px`);
+
+      container.appendChild(meteor);
+
+      const cleanup = () => {
+        meteor.removeEventListener('animationend', cleanup);
+        if (meteor.parentNode) meteor.parentNode.removeChild(meteor);
+      };
+
+      meteor.addEventListener('animationend', cleanup);
+      // Safety cleanup in case animationend doesn't fire
+      window.setTimeout(cleanup, durationMs + 1000);
+    }
+
+    function scheduleNextMeteor() {
+      clearNext();
+      if (isPaused) return;
+
+      // 8-12s randomized
+      const delayMs = 8000 + Math.random() * 4000;
+      timerId = window.setTimeout(() => {
+        spawnMeteor();
+        scheduleNextMeteor();
+      }, delayMs);
+    }
+
+    // Pause on visibility change to reduce background work
+    document.addEventListener('visibilitychange', () => {
+      isPaused = document.hidden;
+      if (isPaused) {
+        clearNext();
+      } else {
+        // Resume immediately or with a small delay
+        scheduleNextMeteor();
+      }
+    });
+
+    scheduleNextMeteor();
+    console.log('Meteors initialized (~10s interval)');
+  }
+
+  /**
    * Initialize all interactions
    */
   function init() {
@@ -201,6 +291,7 @@
       initEntranceAnimations();
       initParallaxEffect();
       initStarParticles();
+      initMeteors();
     } catch (error) {
       console.error('Error initializing interactions:', error);
     }

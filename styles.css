@@ -135,6 +135,72 @@ header, main, footer {
     animation-delay: var(--twinkle-delay, 0s);
 }
 
+/* Shooting star / meteor */
+.meteor {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: var(--meteor-width, 180px);
+    height: 1px; /* Very thin tail */
+    border-radius: 999px;
+    pointer-events: none;
+    opacity: 0;
+    transform-origin: left center;
+    will-change: transform, opacity;
+    /* Keep within stars layer; stars-container is already behind content */
+    z-index: 0;
+    filter: drop-shadow(0 0 8px rgba(113, 255, 241, 0.25));
+
+    /* Tail gradient: Bright head -> Fade out */
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 1) 0%,
+        rgba(255, 255, 255, 0.4) 10%,
+        rgba(113, 255, 241, 0) 100%
+    );
+    
+    /* Animation settings */
+    animation: meteor-fly var(--meteor-duration, 2s) linear forwards;
+}
+
+@media (prefers-color-scheme: dark) {
+    .meteor {
+        /* Looks more natural on dark backgrounds */
+        mix-blend-mode: screen;
+    }
+}
+
+/* Glowing head of the meteor */
+.meteor::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0; /* Head is at the leading edge (0%) */
+    transform: translateY(-50%);
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 
+        0 0 6px 1px rgba(255, 255, 255, 0.8),
+        0 0 15px 2px var(--noctchill-glow); /* Outer glow matches theme */
+}
+
+@keyframes meteor-fly {
+    0% {
+        opacity: 0;
+        transform: translate3d(var(--start-x), var(--start-y), 0) rotate(var(--angle, -45deg)) scaleX(0.5);
+    }
+    10% {
+        opacity: 0.9;
+        transform: translate3d(calc(var(--start-x) - 10vw), calc(var(--start-y) + 10vh), 0) rotate(var(--angle, -45deg)) scaleX(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translate3d(calc(var(--start-x) - 150vw), calc(var(--start-y) + 150vh), 0) rotate(var(--angle, -45deg)) scaleX(1);
+    }
+}
+
 main {
     flex: 1;
     display: flex;
