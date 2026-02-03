@@ -39,50 +39,87 @@
         </svg>
     </div>
     <div class="stars-container"></div>
-    <header class="fade-in">
-        <div class="avatar-container">
-            <img src="avatar.jpg" alt="咲凌的头像" class="avatar">
+    <header class="profile-card fade-in">
+        <div class="profile-avatar-wrapper">
+            <img
+                src="avatar.jpg"
+                alt="咲凌的头像"
+                class="avatar"
+                data-i18n-attr="alt:avatar.alt"
+                width="120"
+                height="120"
+                decoding="async"
+                fetchpriority="high"
+            >
         </div>
-        <h1 class="name">咲凌</h1>
-        <p class="name-english">Sallyn</p>
-        <p class="signature">玻璃晴朗、橘子辉煌</p>
+        <div class="profile-content">
+            <div class="profile-titles">
+                <h1 class="name">咲凌 <span class="name-english">Sallyn</span></h1>
+                <p class="signature" data-i18n="signature">玻璃晴朗、橘子辉煌</p>
+            </div>
+            <p class="profile-bio" data-i18n="bio.text">我是咲凌，也可以叫我Sallyn. 20+，机械专业，兼修一些vibe coding和新媒体运营。70% Base 深圳，30% Base 西安。旅行/现地民</p>
+        </div>
     </header>
-    
+
+    <section class="carousel-section fade-in">
+        <div class="carousel-track">
+            <div class="carousel-slide"><img src="https://assets.sallyn.top/images/2026/02/20260203201230997.webp" alt="神户大学观景台" loading="lazy" decoding="async"></div>
+            <div class="carousel-slide"><img src="https://assets.sallyn.top/images/2026/02/20260203201257166.webp" alt="明石大桥" loading="lazy" decoding="async"></div>
+            <div class="carousel-slide"><img src="https://assets.sallyn.top/images/2026/02/20260203201406210.webp" alt="K-Arena" loading="lazy" decoding="async"></div>
+            <div class="carousel-slide"><img src="https://assets.sallyn.top/images/2026/02/20260203201747873.webp" alt="闪耀色彩-7th-螺旋" loading="lazy" decoding="async"></div>
+            <div class="carousel-slide"><img src="https://assets.sallyn.top/images/2026/02/20260203201856111.webp" alt="MOIW2025" loading="lazy" decoding="async"></div>
+            <div class="carousel-slide"><img src="https://assets.sallyn.top/images/2026/02/20260203202019929.webp" alt="PPP-10th" loading="lazy" decoding="async"></div>
+            <div class="carousel-slide"><img src="https://assets.sallyn.top/images/2026/02/20260203202112731.webp" alt="gkmas-1st" loading="lazy" decoding="async"></div>
+            <div class="carousel-slide"><img src="https://assets.sallyn.top/images/2026/02/20260203202352607.webp" alt="琵琶湖露营" loading="lazy" decoding="async"></div>
+            <div class="carousel-slide"><img src="https://assets.sallyn.top/images/2026/02/20260203202352608.webp" alt="ANA见学" loading="lazy" decoding="async"></div>
+            <div class="carousel-slide"><img src="https://assets.sallyn.top/images/2026/02/20260203202352610.webp" alt="神户摩耶山" loading="lazy" decoding="async"></div>
+        </div>
+    </section>
+
     <main>
         <section class="skills-section fade-in">
-            <div class="skill-tag">旅行</div>
-            <div class="skill-tag">音乐</div>
-            <div class="skill-tag">前端开发</div>
+            <div class="skill-tag" data-i18n="skills.travel">旅行</div>
+            <div class="skill-tag" data-i18n="skills.music">音乐</div>
+            <div class="skill-tag" data-i18n="skills.it">IT</div>
+            <div class="skill-tag" data-i18n="skills.imas">imas</div>
+            <div class="skill-tag" data-i18n="skills.bangdream">BanG Dream</div>
+            <div class="skill-tag" data-i18n="skills.vocaloid">Vocaloid</div>
         </section>
-        
+
         <section class="links-section">
             <a href="https://x.com/XiaoLing_Arisa" class="link-card fade-in" target="_blank" rel="noopener noreferrer">
                 <i class="fa-brands fa-x-twitter"></i>
                 <span>X (Twitter)</span>
             </a>
-            
+
             <a href="https://space.bilibili.com/85829166" class="link-card fade-in" target="_blank" rel="noopener noreferrer">
                 <i class="fa-brands fa-bilibili"></i>
                 <span>Bilibili</span>
             </a>
-            
+
             <a href="https://github.com/Sallyn0225" class="link-card fade-in" target="_blank" rel="noopener noreferrer">
                 <i class="fa-brands fa-github"></i>
                 <span>GitHub</span>
             </a>
-            
+
+            <a href="https://www.xiaohongshu.com/user/profile/61cca0a4000000001000d2a9" class="link-card fade-in" target="_blank" rel="noopener noreferrer">
+                <i class="fa-solid fa-book"></i>
+                <span data-i18n="links.xiaohongshu">小红书</span>
+            </a>
+
             <a href="https://www.sallyn.top/" class="link-card fade-in" target="_blank" rel="noopener noreferrer">
                 <i class="fa-solid fa-globe"></i>
-                <span>博客</span>
+                <span data-i18n="links.blog">博客</span>
             </a>
         </section>
     </main>
     
     <footer class="fade-in">
-        <p>&copy; 2025 咲凌 Sallyn</p>
+        <p data-i18n="footer.copyright">&copy; 2025 咲凌 Sallyn</p>
     </footer>
     
     <!-- JavaScript -->
+    <script src="i18n.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

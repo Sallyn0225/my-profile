@@ -83,6 +83,7 @@ body {
     background: var(--bg-color);
     color: var(--text-primary);
     line-height: 1.6;
+    /* Viewport height: keep a safe baseline */
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -134,6 +135,72 @@ header, main, footer {
     animation-delay: var(--twinkle-delay, 0s);
 }
 
+/* Shooting star / meteor */
+.meteor {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: var(--meteor-width, 180px);
+    height: 1px; /* Very thin tail */
+    border-radius: 999px;
+    pointer-events: none;
+    opacity: 0;
+    transform-origin: left center;
+    will-change: transform, opacity;
+    /* Keep within stars layer; stars-container is already behind content */
+    z-index: 0;
+    filter: drop-shadow(0 0 8px rgba(113, 255, 241, 0.25));
+
+    /* Tail gradient: Bright head -> Fade out */
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 1) 0%,
+        rgba(255, 255, 255, 0.4) 10%,
+        rgba(113, 255, 241, 0) 100%
+    );
+    
+    /* Animation settings */
+    animation: meteor-fly var(--meteor-duration, 2s) linear forwards;
+}
+
+@media (prefers-color-scheme: dark) {
+    .meteor {
+        /* Looks more natural on dark backgrounds */
+        mix-blend-mode: screen;
+    }
+}
+
+/* Glowing head of the meteor */
+.meteor::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0; /* Head is at the leading edge (0%) */
+    transform: translateY(-50%);
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 
+        0 0 6px 1px rgba(255, 255, 255, 0.8),
+        0 0 15px 2px var(--noctchill-glow); /* Outer glow matches theme */
+}
+
+@keyframes meteor-fly {
+    0% {
+        opacity: 0;
+        transform: translate3d(var(--start-x), var(--start-y), 0) rotate(var(--angle, -45deg)) scaleX(0.5);
+    }
+    10% {
+        opacity: 0.9;
+        transform: translate3d(calc(var(--start-x) - 10vw), calc(var(--start-y) + 10vh), 0) rotate(var(--angle, -45deg)) scaleX(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translate3d(calc(var(--start-x) - 150vw), calc(var(--start-y) + 150vh), 0) rotate(var(--angle, -45deg)) scaleX(1);
+    }
+}
+
 main {
     flex: 1;
     display: flex;
@@ -146,13 +213,68 @@ header {
     margin-bottom: var(--spacing-xl);
 }
 
+/* Unified Profile Card (Intro) */
+.profile-card {
+    background-color: var(--card-bg);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-xl);
+    margin-bottom: var(--spacing-lg);
+    box-shadow: 0 6px 22px var(--shadow-color);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-md);
+    text-align: center;
+
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.profile-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+        90% 70% at 30% 0%,
+        rgba(255, 255, 255, 0.6) 0%,
+        rgba(255, 255, 255, 0) 55%
+    );
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+@media (prefers-color-scheme: dark) {
+    .profile-card {
+        border-color: rgba(255, 255, 255, 0.08);
+        box-shadow: 0 10px 28px var(--shadow-color);
+    }
+
+    .profile-card::before {
+        opacity: 0.25;
+    }
+}
+
+.profile-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px var(--hover-shadow);
+}
+
+.profile-avatar-wrapper {
+    position: relative;
+    z-index: 1;
+}
+
 .avatar-container {
     margin-bottom: var(--spacing-md);
 }
 
 .avatar {
-    width: 120px;
-    height: 120px;
+    /* Fluid sizing to avoid breakpoint jumps */
+    width: clamp(100px, 10vw, 120px);
+    height: clamp(100px, 10vw, 120px);
     border-radius: 50%;
     object-fit: cover;
     border: 3px solid var(--card-bg);
@@ -165,10 +287,28 @@ header {
 }
 
 .name {
-    font-size: 2rem;
+    /* Fluid typography to reduce breakpoint-dependent jumps */
+    font-size: clamp(1.75rem, 1.55rem + 1vw, 2.25rem);
     font-weight: 700;
     margin-bottom: var(--spacing-xs);
     letter-spacing: -0.5px;
+}
+
+/* Name + English inline when used inside profile card */
+.profile-card .name {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.profile-card .name-english {
+    font-size: 1.15rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    letter-spacing: 0;
+    opacity: 0.9;
 }
 
 .name-english {
@@ -185,6 +325,116 @@ header {
     opacity: 0.9;
 }
 
+/* Bio Section */
+.bio-section {
+    width: 100%;
+    max-width: var(--max-width);
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    margin-bottom: var(--spacing-lg);
+    font-size: clamp(0.95rem, 0.9rem + 0.25vw, 1.05rem);
+    color: var(--text-secondary);
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.7;
+}
+
+/* Intro bio text inside unified profile card */
+.profile-content {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.profile-titles {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.profile-bio {
+    font-size: clamp(0.95rem, 0.9rem + 0.25vw, 1.05rem);
+    color: var(--text-secondary);
+    line-height: 1.75;
+    margin-top: var(--spacing-xs);
+    padding-top: var(--spacing-md);
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+@media (prefers-color-scheme: dark) {
+    .profile-bio {
+        border-top-color: rgba(255, 255, 255, 0.10);
+    }
+}
+
+@media (min-width: 640px) {
+    .profile-card {
+        flex-direction: row;
+        align-items: flex-start;
+        text-align: left;
+    }
+
+    .profile-card .name {
+        justify-content: flex-start;
+    }
+
+    .profile-bio {
+        border-top: none;
+        padding-top: 0;
+        margin-top: var(--spacing-xs);
+        padding-left: var(--spacing-md);
+        /* Fallback first */
+        border-left: 2px solid var(--accent-color);
+        /* If supported, soften the accent */
+        border-left-color: color-mix(in srgb, var(--accent-color) 80%, transparent);
+    }
+}
+
+/* Carousel Section */
+.carousel-section {
+    width: 100%;
+    max-width: var(--max-width);
+    margin-left: auto;
+    margin-right: auto;
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+    margin-bottom: var(--spacing-lg);
+    border-radius: var(--border-radius-md);
+    box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+.carousel-track {
+    display: flex;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    overflow-x: auto;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+}
+
+.carousel-track::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+}
+
+.carousel-slide {
+    flex: 0 0 100%;
+    min-width: 100%;
+    scroll-snap-align: start;
+}
+
+.carousel-slide img {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
+    aspect-ratio: 16 / 9;
+}
+
 /* Skills Section */
 .skills-section {
     display: flex;
@@ -197,11 +447,16 @@ header {
 .skill-tag {
     background-color: var(--skill-bg);
     color: var(--skill-text);
-    padding: 6px 14px;
+    /* Make tags comfortably tappable (>=44px) */
+    min-height: 44px;
+    padding: 8px 14px;
     border-radius: var(--border-radius-lg);
     font-size: 0.9rem;
     font-weight: 500;
     transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .skill-tag:hover {
@@ -289,10 +544,32 @@ footer {
     top: 0;
     left: 0;
     width: 100%;
+    /* Keep effects stable on mobile browsers with dynamic toolbars */
     height: 100vh;
     overflow: hidden;
     z-index: 0;
     pointer-events: none;
+}
+
+/* Prefer modern viewport units to avoid mobile URL bar issues */
+@supports (height: 100svh) {
+    body {
+        min-height: 100svh;
+    }
+
+    .bg-effects {
+        height: 100svh;
+    }
+}
+
+@supports (height: 100dvh) {
+    body {
+        min-height: 100dvh;
+    }
+
+    .bg-effects {
+        height: 100dvh;
+    }
 }
 
 .waves {
@@ -335,12 +612,15 @@ footer {
 
 /* Staggered Animation Delays */
 header.fade-in { animation-delay: 0.1s; }
-.skills-section.fade-in { animation-delay: 0.2s; }
-.links-section .link-card:nth-child(1) { animation-delay: 0.3s; }
-.links-section .link-card:nth-child(2) { animation-delay: 0.4s; }
-.links-section .link-card:nth-child(3) { animation-delay: 0.5s; }
-.links-section .link-card:nth-child(4) { animation-delay: 0.6s; }
-footer.fade-in { animation-delay: 0.8s; }
+.bio-section.fade-in { animation-delay: 0.15s; }
+.carousel-section.fade-in { animation-delay: 0.25s; }
+.skills-section.fade-in { animation-delay: 0.3s; }
+.links-section .link-card:nth-child(1) { animation-delay: 0.35s; }
+.links-section .link-card:nth-child(2) { animation-delay: 0.45s; }
+.links-section .link-card:nth-child(3) { animation-delay: 0.55s; }
+.links-section .link-card:nth-child(4) { animation-delay: 0.65s; }
+.links-section .link-card:nth-child(5) { animation-delay: 0.75s; }
+footer.fade-in { animation-delay: 0.9s; }
 
 /* Responsive Media Queries */
 @media (max-width: 480px) {
@@ -348,15 +628,6 @@ footer.fade-in { animation-delay: 0.8s; }
     :root {
         --spacing-lg: 20px;
         --spacing-md: 12px;
-    }
-    
-    .name {
-        font-size: 1.75rem;
-    }
-    
-    .avatar {
-        width: 100px;
-        height: 100px;
     }
     
     .link-card {
@@ -394,5 +665,21 @@ footer.fade-in { animation-delay: 0.8s; }
     
     .link-card:hover {
         transform: none;
+    }
+
+    .profile-card:hover {
+        transform: none;
+    }
+
+    .avatar:hover {
+        transform: none;
+    }
+
+    .skill-tag:hover {
+        transform: none;
+    }
+    
+    .carousel-track {
+        scroll-behavior: auto !important;
     }
 }
