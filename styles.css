@@ -447,11 +447,16 @@ header {
 .skill-tag {
     background-color: var(--skill-bg);
     color: var(--skill-text);
-    padding: 6px 14px;
+    /* Make tags comfortably tappable (>=44px) */
+    min-height: 44px;
+    padding: 8px 14px;
     border-radius: var(--border-radius-lg);
     font-size: 0.9rem;
     font-weight: 500;
     transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .skill-tag:hover {
@@ -546,7 +551,7 @@ footer {
     pointer-events: none;
 }
 
-/* Use small viewport units when supported to reduce URL bar jump */
+/* Prefer modern viewport units to avoid mobile URL bar issues */
 @supports (height: 100svh) {
     body {
         min-height: 100svh;
@@ -554,6 +559,16 @@ footer {
 
     .bg-effects {
         height: 100svh;
+    }
+}
+
+@supports (height: 100dvh) {
+    body {
+        min-height: 100dvh;
+    }
+
+    .bg-effects {
+        height: 100dvh;
     }
 }
 
@@ -653,6 +668,14 @@ footer.fade-in { animation-delay: 0.9s; }
     }
 
     .profile-card:hover {
+        transform: none;
+    }
+
+    .avatar:hover {
+        transform: none;
+    }
+
+    .skill-tag:hover {
         transform: none;
     }
     
