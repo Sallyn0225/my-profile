@@ -45,6 +45,7 @@
                 src="avatar.jpg"
                 alt="咲凌的头像"
                 class="avatar"
+                data-i18n-attr="alt:avatar.alt"
                 width="120"
                 height="120"
                 decoding="async"
@@ -53,14 +54,14 @@
         </div>
         <h1 class="name">咲凌</h1>
         <p class="name-english">Sallyn</p>
-        <p class="signature">玻璃晴朗、橘子辉煌</p>
+        <p class="signature" data-i18n="signature">玻璃晴朗、橘子辉煌</p>
     </header>
     
     <main>
         <section class="skills-section fade-in">
-            <div class="skill-tag">旅行</div>
-            <div class="skill-tag">音乐</div>
-            <div class="skill-tag">前端开发</div>
+            <div class="skill-tag" data-i18n="skills.travel">旅行</div>
+            <div class="skill-tag" data-i18n="skills.music">音乐</div>
+            <div class="skill-tag" data-i18n="skills.frontend">前端开发</div>
         </section>
         
         <section class="links-section">
@@ -81,16 +82,17 @@
             
             <a href="https://www.sallyn.top/" class="link-card fade-in" target="_blank" rel="noopener noreferrer">
                 <i class="fa-solid fa-globe"></i>
-                <span>博客</span>
+                <span data-i18n="links.blog">博客</span>
             </a>
         </section>
     </main>
     
     <footer class="fade-in">
-        <p>&copy; 2025 咲凌 Sallyn</p>
+        <p data-i18n="footer.copyright">&copy; 2025 咲凌 Sallyn</p>
     </footer>
     
     <!-- JavaScript -->
+    <script src="i18n.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
