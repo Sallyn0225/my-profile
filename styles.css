@@ -83,6 +83,7 @@ body {
     background: var(--bg-color);
     color: var(--text-primary);
     line-height: 1.6;
+    /* Viewport height: keep a safe baseline */
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -151,8 +152,9 @@ header {
 }
 
 .avatar {
-    width: 120px;
-    height: 120px;
+    /* Fluid sizing to avoid breakpoint jumps */
+    width: clamp(100px, 10vw, 120px);
+    height: clamp(100px, 10vw, 120px);
     border-radius: 50%;
     object-fit: cover;
     border: 3px solid var(--card-bg);
@@ -165,7 +167,8 @@ header {
 }
 
 .name {
-    font-size: 2rem;
+    /* Fluid typography to reduce breakpoint-dependent jumps */
+    font-size: clamp(1.75rem, 1.55rem + 1vw, 2.25rem);
     font-weight: 700;
     margin-bottom: var(--spacing-xs);
     letter-spacing: -0.5px;
@@ -289,10 +292,22 @@ footer {
     top: 0;
     left: 0;
     width: 100%;
+    /* Keep effects stable on mobile browsers with dynamic toolbars */
     height: 100vh;
     overflow: hidden;
     z-index: 0;
     pointer-events: none;
+}
+
+/* Use small viewport units when supported to reduce URL bar jump */
+@supports (height: 100svh) {
+    body {
+        min-height: 100svh;
+    }
+
+    .bg-effects {
+        height: 100svh;
+    }
 }
 
 .waves {
@@ -348,15 +363,6 @@ footer.fade-in { animation-delay: 0.8s; }
     :root {
         --spacing-lg: 20px;
         --spacing-md: 12px;
-    }
-    
-    .name {
-        font-size: 1.75rem;
-    }
-    
-    .avatar {
-        width: 100px;
-        height: 100px;
     }
     
     .link-card {
