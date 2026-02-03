@@ -254,6 +254,54 @@ header {
     opacity: 0.9;
 }
 
+/* Bio Section */
+.bio-section {
+    text-align: center;
+    margin-bottom: var(--spacing-lg);
+    font-size: clamp(0.95rem, 0.9rem + 0.25vw, 1.05rem);
+    color: var(--text-secondary);
+    max-width: 90%;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.7;
+}
+
+/* Carousel Section */
+.carousel-section {
+    width: 100%;
+    overflow: hidden;
+    margin-bottom: var(--spacing-lg);
+    border-radius: var(--border-radius-md);
+    box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+.carousel-track {
+    display: flex;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    overflow-x: auto;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+}
+
+.carousel-track::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+}
+
+.carousel-slide {
+    flex: 0 0 100%;
+    min-width: 100%;
+    scroll-snap-align: start;
+}
+
+.carousel-slide img {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
+    aspect-ratio: 16 / 9;
+}
+
 /* Skills Section */
 .skills-section {
     display: flex;
@@ -416,12 +464,15 @@ footer {
 
 /* Staggered Animation Delays */
 header.fade-in { animation-delay: 0.1s; }
-.skills-section.fade-in { animation-delay: 0.2s; }
-.links-section .link-card:nth-child(1) { animation-delay: 0.3s; }
-.links-section .link-card:nth-child(2) { animation-delay: 0.4s; }
-.links-section .link-card:nth-child(3) { animation-delay: 0.5s; }
-.links-section .link-card:nth-child(4) { animation-delay: 0.6s; }
-footer.fade-in { animation-delay: 0.8s; }
+.bio-section.fade-in { animation-delay: 0.15s; }
+.carousel-section.fade-in { animation-delay: 0.25s; }
+.skills-section.fade-in { animation-delay: 0.3s; }
+.links-section .link-card:nth-child(1) { animation-delay: 0.35s; }
+.links-section .link-card:nth-child(2) { animation-delay: 0.45s; }
+.links-section .link-card:nth-child(3) { animation-delay: 0.55s; }
+.links-section .link-card:nth-child(4) { animation-delay: 0.65s; }
+.links-section .link-card:nth-child(5) { animation-delay: 0.75s; }
+footer.fade-in { animation-delay: 0.9s; }
 
 /* Responsive Media Queries */
 @media (max-width: 480px) {
@@ -466,5 +517,9 @@ footer.fade-in { animation-delay: 0.8s; }
     
     .link-card:hover {
         transform: none;
+    }
+    
+    .carousel-track {
+        scroll-behavior: auto !important;
     }
 }
