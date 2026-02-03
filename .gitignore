@@ -5,3 +5,5 @@ nul
 # Local dev server artifacts
 server.log
 server.pid
+.server.log
+.server.pid
