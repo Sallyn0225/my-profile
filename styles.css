@@ -256,11 +256,14 @@ header {
 
 /* Bio Section */
 .bio-section {
+    width: 100%;
+    max-width: var(--max-width);
+    position: relative;
+    z-index: 1;
     text-align: center;
     margin-bottom: var(--spacing-lg);
     font-size: clamp(0.95rem, 0.9rem + 0.25vw, 1.05rem);
     color: var(--text-secondary);
-    max-width: 90%;
     margin-left: auto;
     margin-right: auto;
     line-height: 1.7;
@@ -269,6 +272,11 @@ header {
 /* Carousel Section */
 .carousel-section {
     width: 100%;
+    max-width: var(--max-width);
+    margin-left: auto;
+    margin-right: auto;
+    position: relative;
+    z-index: 1;
     overflow: hidden;
     margin-bottom: var(--spacing-lg);
     border-radius: var(--border-radius-md);
