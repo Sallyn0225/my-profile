@@ -635,6 +635,13 @@ footer.fade-in { animation-delay: 0.9s; }
     }
 }
 
+@media (max-width: 768px) {
+    .carousel-track {
+        overflow-x: hidden;
+        touch-action: pan-y;
+    }
+}
+
 @media (min-width: 481px) and (max-width: 768px) {
     /* Tablet Styles */
     :root {
