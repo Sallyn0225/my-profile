@@ -284,6 +284,76 @@
   }
 
   /**
+   * Initialize Carousel Autoplay
+   * Auto-scrolls carousel every 4 seconds with reduced-motion support
+   */
+  function initCarousel() {
+    const track = document.querySelector('.carousel-track');
+    const slides = document.querySelectorAll('.carousel-slide');
+
+    if (!track || slides.length === 0) {
+      console.warn('Carousel elements not found');
+      return;
+    }
+
+    // Skip autoplay if user prefers reduced motion
+    if (prefersReducedMotion) {
+      console.log('Carousel autoplay skipped (prefers-reduced-motion)');
+      return;
+    }
+
+    let currentIndex = 0;
+    let interval;
+
+    /**
+     * Scroll to specific slide with smooth animation
+     */
+    function scrollToSlide(index) {
+      const slideWidth = slides[0].offsetWidth;
+      track.scrollTo({
+        left: slideWidth * index,
+        behavior: 'smooth'
+      });
+    }
+
+    /**
+     * Start auto-playing carousel
+     */
+    function startAutoplay() {
+      interval = setInterval(() => {
+        // Loop back to 0 after the last slide
+        currentIndex = (currentIndex + 1) % slides.length;
+        scrollToSlide(currentIndex);
+      }, 4000); // 4 seconds
+    }
+
+    /**
+     * Stop auto-playing carousel
+     */
+    function stopAutoplay() {
+      clearInterval(interval);
+    }
+
+    // Start autoplay
+    startAutoplay();
+
+    // Pause when page hidden
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        stopAutoplay();
+      } else {
+        startAutoplay();
+      }
+    });
+
+    // Optional: pause on hover
+    track.addEventListener('mouseenter', stopAutoplay);
+    track.addEventListener('mouseleave', startAutoplay);
+
+    console.log('Carousel autoplay initialized');
+  }
+
+  /**
    * Initialize all interactions
    */
   function init() {
@@ -292,6 +362,7 @@
       initParallaxEffect();
       initStarParticles();
       initMeteors();
+      initCarousel();
     } catch (error) {
       console.error('Error initializing interactions:', error);
     }
