@@ -9,9 +9,11 @@ This repo is a **static** Linktree-style profile page (plain **HTML/CSS/vanilla 
 ├── index.html     # Page markup + content + SEO meta
 ├── styles.css     # Theme tokens, layout, animations, responsive rules
 ├── script.js      # UI interactions (animations/parallax/stars/meteors)
+├── game.js        # Flappy Kaho game logic (canvas render/audio/theme)
 ├── i18n.js        # i18n loader + DOM translation
 ├── locales/       # JSON translation files (zh/en/ja)
-└── avatar.jpg     # Avatar image referenced by index.html
+├── avatar.jpg     # Avatar image referenced by index.html
+└── kaho-origin_pixel_art.png # Game character pixel art
 ```
 
 ## Build / lint / test
