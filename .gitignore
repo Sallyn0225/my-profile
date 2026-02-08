@@ -1,6 +1,11 @@
 .sisyphus/
 nul
 我的个人信息大全.md
+node_modules/
+package.json
+package-lock.json
+playwright-report/
+test-results/
 
 # Local dev server artifacts
 server.log

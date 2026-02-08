@@ -12,6 +12,7 @@
 - 背景效果：波浪背景动画、星星闪烁（桌面端鼠标交互 / 移动端自动）
 - 暗色模式：夜间海洋风格（夜光虫配色）
 - 可访问性：支持 `prefers-reduced-motion`（减少动态效果）
+- 内置小游戏：Flappy Kaho（默认展开显示；得分 8-bit 音效、像素视差背景、水管帽造型、日夜主题随系统切换）
 - SEO：基础 meta + Open Graph + Twitter Card
 
 ## 目录结构
@@ -21,7 +22,11 @@
 ├── index.html    # 页面结构与内容
 ├── styles.css    # 样式、主题、响应式
 ├── script.js     # 交互逻辑（入场动画/视差）
-└── avatar.jpg    # 头像（请保持文件名不变，或同步改 index.html）
+├── game.js       # Flappy Kaho 游戏逻辑
+├── i18n.js       # 多语言切换逻辑
+├── locales/      # zh/en/ja 文案
+├── avatar.jpg    # 头像（请保持文件名不变，或同步改 index.html）
+└── kaho-origin_pixel_art.png # 游戏角色像素图
 ```
 
 ## 本地预览
@@ -39,6 +44,21 @@ python -m http.server 4173
 ```text
 http://localhost:4173
 ```
+
+## Flappy Kaho 操作
+
+- 开始游戏：点击/触摸游戏画布，或按空格。
+- 飞行：游戏进行中点击/触摸画布，或按空格。
+- 重新开始：游戏结束后再次点击/触摸画布，或按空格（页面也会显示“重新开始”按钮作为备用入口）。
+
+> 如果系统开启了“减少动态效果”（`prefers-reduced-motion`），游戏会默认暂停并提示你手动启用。
+
+## Flappy Kaho 视觉与音效
+
+- 得分音效：每加一分播放复古 8-bit 音效（浏览器需首次点击后才允许播放）。
+- 背景：像素风格分层背景，并带视差滚动效果。
+- 水管：带管帽的像素水管造型（碰撞仍按原矩形判定，不改变手感）。
+- 日夜：跟随系统深色/浅色模式实时切换。
 
 ## 部署到 Cloudflare Pages
 
@@ -58,6 +78,8 @@ http://localhost:4173
 - 修改社交链接 / 文案：编辑 `index.html`
 - 修改配色与动画：编辑 `styles.css`
 - 修改交互逻辑：编辑 `script.js`
+- 修改游戏逻辑：编辑 `game.js`
+- 修改多语言文案：编辑 `locales/*.json`
 
 ## 依赖
 

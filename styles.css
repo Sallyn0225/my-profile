@@ -656,6 +656,165 @@ footer.fade-in { animation-delay: 0.9s; }
     }
 }
 
+@media (min-width: 1024px) {
+    :root {
+        --max-width: 768px;
+    }
+
+    .skills-section {
+        gap: 12px;
+    }
+
+    .skill-tag {
+        padding: 10px 18px;
+        font-size: 0.95rem;
+    }
+}
+
+
+/* Game Section */
+.game-section {
+    width: 100%;
+    max-width: var(--max-width);
+    margin: 0 auto var(--spacing-lg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+}
+
+.game-container {
+    width: 100%;
+    max-width: var(--max-width);
+    position: relative;
+    overflow: hidden;
+    opacity: 1;
+    margin-top: var(--spacing-sm);
+    transition: opacity 0.4s ease;
+    border-radius: var(--border-radius-md);
+}
+
+.game-container.hidden,
+.game-over-overlay.hidden,
+.game-restart-btn.hidden,
+.reduced-motion-warning.hidden {
+    display: none;
+}
+
+#game-canvas {
+    display: block;
+    width: 100%;
+    margin: 0 auto;
+    height: auto;
+    aspect-ratio: 2 / 3;
+    border-radius: var(--border-radius-md);
+    box-shadow: 0 4px 12px var(--shadow-color);
+    border: 2px solid var(--card-bg);
+    background-color: #70c5ce;
+    cursor: pointer;
+    touch-action: none;
+}
+
+@media (min-width: 769px) {
+    /*
+        Desktop: keep the page comfortably wide, but constrain the game
+        canvas height so it stays playable on shorter screens.
+    */
+    #game-canvas {
+        height: min(75vh, 720px);
+        aspect-ratio: auto;
+    }
+}
+
+
+
+
+
+.game-ui {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin: var(--spacing-sm) auto;
+    font-weight: 700;
+    color: var(--text-primary);
+    padding: 0 var(--spacing-xs);
+    font-size: 0.95rem;
+}
+
+.game-over-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    background: rgba(0, 0, 0, 0.85);
+    color: white;
+    padding: var(--spacing-lg);
+    border-radius: var(--border-radius-md);
+    text-align: center;
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    min-width: 200px;
+    z-index: 10;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.game-over-overlay h2 {
+    margin-bottom: var(--spacing-sm);
+    font-size: 1.5rem;
+    color: var(--noctchill-glow);
+}
+
+.game-restart-btn {
+    display: block;
+    margin: var(--spacing-md) auto 0;
+    padding: 10px 24px;
+    background-color: var(--card-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--accent-color);
+    border-radius: var(--border-radius-md);
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s ease;
+}
+
+.game-restart-btn:hover {
+    background-color: var(--accent-color);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.reduced-motion-warning {
+    background-color: var(--card-bg);
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius-md);
+    text-align: center;
+    margin-top: var(--spacing-md);
+    border: 1px solid var(--accent-color);
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.enable-animations-btn {
+    margin-top: var(--spacing-sm);
+    padding: 6px 16px;
+    background-color: var(--skill-bg);
+    color: var(--skill-text);
+    border: none;
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.enable-animations-btn:hover {
+    background-color: var(--accent-color);
+    color: white;
+}
+
 /* Reduced Motion Preference */
 @media (prefers-reduced-motion: reduce) {
     *, ::before, ::after {
@@ -688,5 +847,17 @@ footer.fade-in { animation-delay: 0.9s; }
     
     .carousel-track {
         scroll-behavior: auto !important;
+    }
+
+    /* Game Section Reduced Motion */
+    .game-container {
+        transition: none !important;
+    }
+    
+    .game-restart-btn,
+    .enable-animations-btn {
+        transition: none !important;
+        transform: none !important;
+        animation: none !important;
     }
 }

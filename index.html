@@ -113,6 +113,29 @@
             </a>
         </section>
     </main>
+
+    <section class="game-section fade-in">
+        <div class="game-container">
+            <canvas id="game-canvas" width="320" height="480"></canvas>
+            <div class="game-ui">
+                <div class="game-score">
+                    <span data-i18n="game.score">Score</span>: <span id="current-score">0</span>
+                </div>
+                <div class="game-best">
+                    <span data-i18n="game.best">Best</span>: <span id="best-score">0</span>
+                </div>
+            </div>
+            <div class="game-over-overlay hidden">
+                <h2 data-i18n="game.gameOver">Game Over</h2>
+                <p data-i18n="game.tapToStart">Tap the canvas to restart</p>
+            </div>
+            <button class="game-restart-btn hidden" data-i18n="game.restart">Restart</button>
+            <div class="reduced-motion-warning hidden">
+                <p data-i18n="game.reducedMotion">Reduced motion is enabled. Animations will be minimized.</p>
+                <button class="enable-animations-btn" data-i18n="game.enableAnyway">Enable Anyway</button>
+            </div>
+        </div>
+    </section>
     
     <footer class="fade-in">
         <p data-i18n="footer.copyright">&copy; 2025 咲凌 Sallyn</p>
@@ -121,5 +144,6 @@
     <!-- JavaScript -->
     <script src="i18n.js"></script>
     <script src="script.js"></script>
+    <script src="game.js"></script>
 </body>
 </html>
