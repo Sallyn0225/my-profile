@@ -12,6 +12,7 @@
 - 背景效果：波浪背景动画、星星闪烁（桌面端鼠标交互 / 移动端自动）
 - 暗色模式：夜间海洋风格（夜光虫配色）
 - 可访问性：支持 `prefers-reduced-motion`（减少动态效果）
+- 内置小游戏：Flappy Kaho（默认展开显示）
 - SEO：基础 meta + Open Graph + Twitter Card
 
 ## 目录结构
@@ -21,7 +22,11 @@
 ├── index.html    # 页面结构与内容
 ├── styles.css    # 样式、主题、响应式
 ├── script.js     # 交互逻辑（入场动画/视差）
-└── avatar.jpg    # 头像（请保持文件名不变，或同步改 index.html）
+├── game.js       # Flappy Kaho 游戏逻辑
+├── i18n.js       # 多语言切换逻辑
+├── locales/      # zh/en/ja 文案
+├── avatar.jpg    # 头像（请保持文件名不变，或同步改 index.html）
+└── kaho-origin_pixel_art.png # 游戏角色像素图
 ```
 
 ## 本地预览
@@ -58,6 +63,8 @@ http://localhost:4173
 - 修改社交链接 / 文案：编辑 `index.html`
 - 修改配色与动画：编辑 `styles.css`
 - 修改交互逻辑：编辑 `script.js`
+- 修改游戏逻辑：编辑 `game.js`
+- 修改多语言文案：编辑 `locales/*.json`
 
 ## 依赖
 
