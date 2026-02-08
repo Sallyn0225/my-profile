@@ -628,7 +628,10 @@
 
       // Bottom Pipe
       const bottomY = pipe.y + PHYSICS.PIPE_GAP;
-      drawPipe(ctx, pipe.x, bottomY, h, h, false);
+      // NOTE: For bottom pipes, drawPipe uses the `bottomY` argument (botInt)
+      // as the top edge of the bottom pipe (gap bottom). Passing `h` here would
+      // draw the cap off-canvas and result in an invisible pipe with collisions.
+      drawPipe(ctx, pipe.x, 0, bottomY, h, false);
     });
 
     // Draw Bird
