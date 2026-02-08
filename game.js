@@ -61,6 +61,147 @@
   let lang = document.documentElement.lang || 'zh';
   let spawnTimer = 0;
 
+  // --- Background State ---
+  let bgOffsets = {
+    clouds: 0,
+    hills: 0,
+    trees: 0,
+    ground: 0
+  };
+
+  // --- Background Renderer Module ---
+  const BackgroundRenderer = {
+    colors: {
+      sky: ['#87CEEB', '#4682B4'],
+      clouds: '#FFFFFF',
+      hills: ['#9ACD32', '#6B8E23'],
+      trees: ['#2F4F2F', '#1C3D1C'],
+      ground: ['#7CFC00', '#32CD32']
+    },
+
+    drawSky: function(ctx, w, h) {
+      const grad = ctx.createLinearGradient(0, 0, 0, h);
+      grad.addColorStop(0, this.colors.sky[0]);
+      grad.addColorStop(1, this.colors.sky[1]);
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, w, h);
+    },
+
+    drawClouds: function(ctx, w, h, offset) {
+      ctx.fillStyle = this.colors.clouds;
+      const cloudWidth = 60;
+      const numClouds = Math.ceil(w / cloudWidth) + 2;
+
+      for (let i = 0; i < numClouds; i++) {
+        const x = Math.floor((i * cloudWidth - offset) % (w + cloudWidth));
+        const y = Math.floor(30 + Math.sin(i * 0.5) * 20);
+
+        ctx.fillRect(x, y, Math.floor(cloudWidth * 0.8), Math.floor(cloudWidth * 0.3));
+        ctx.fillRect(x + Math.floor(cloudWidth * 0.2), y - Math.floor(cloudWidth * 0.15), Math.floor(cloudWidth * 0.6), Math.floor(cloudWidth * 0.25));
+        ctx.fillRect(x + Math.floor(cloudWidth * 0.1), y + Math.floor(cloudWidth * 0.05), Math.floor(cloudWidth * 0.7), Math.floor(cloudWidth * 0.2));
+      }
+    },
+
+    drawHills: function(ctx, w, h, offset) {
+      const hillWidth = 80;
+      const numHills = Math.ceil(w / hillWidth) + 2;
+      const hillBaseY = h - 80;
+
+      for (let i = 0; i < numHills; i++) {
+        const x = Math.floor((i * hillWidth - offset) % (w + hillWidth));
+        const hillHeight = Math.floor(40 + Math.sin(i * 0.7) * 20);
+
+        ctx.fillStyle = this.colors.hills[i % 2];
+        ctx.beginPath();
+        ctx.moveTo(x, hillBaseY);
+        ctx.lineTo(x + Math.floor(hillWidth / 2), hillBaseY - hillHeight);
+        ctx.lineTo(x + hillWidth, hillBaseY);
+        ctx.closePath();
+        ctx.fill();
+      }
+    },
+
+    drawTrees: function(ctx, w, h, offset) {
+      const treeWidth = 30;
+      const numTrees = Math.ceil(w / treeWidth) + 2;
+      const treeBaseY = h - 80;
+
+      for (let i = 0; i < numTrees; i++) {
+        const x = Math.floor((i * treeWidth - offset) % (w + treeWidth));
+        const treeHeight = Math.floor(35 + Math.sin(i * 0.9) * 15);
+
+        ctx.fillStyle = this.colors.trees[i % 2];
+
+        ctx.beginPath();
+        ctx.moveTo(x, treeBaseY);
+        ctx.lineTo(x + Math.floor(treeWidth / 2), treeBaseY - treeHeight);
+        ctx.lineTo(x + treeWidth, treeBaseY);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.fillRect(x + Math.floor(treeWidth / 2) - 2, treeBaseY - treeHeight, 4, treeHeight);
+      }
+    },
+
+    drawGround: function(ctx, w, h, offset) {
+      const groundHeight = 80;
+      const patternWidth = 40;
+      const numPatterns = Math.ceil(w / patternWidth) + 2;
+
+      ctx.fillStyle = this.colors.ground[0];
+      ctx.fillRect(0, h - groundHeight, w, groundHeight);
+
+      ctx.fillStyle = this.colors.ground[1];
+      for (let i = 0; i < numPatterns; i++) {
+        const x = Math.floor((i * patternWidth - offset) % (w + patternWidth));
+        ctx.fillRect(x, h - groundHeight + 5, Math.floor(patternWidth / 2), 10);
+        ctx.fillRect(x + Math.floor(patternWidth / 2), h - groundHeight + 20, Math.floor(patternWidth / 2), 8);
+      }
+    },
+
+    render: function(ctx, w, h) {
+      ctx.imageSmoothingEnabled = false;
+
+      this.drawSky(ctx, w, h);
+      this.drawClouds(ctx, w, h, bgOffsets.clouds);
+      this.drawHills(ctx, w, h, bgOffsets.hills);
+      this.drawTrees(ctx, w, h, bgOffsets.trees);
+      this.drawGround(ctx, w, h, bgOffsets.ground);
+    }
+  };
+
+  // --- Sound Manager ---
+  let audioCtx = null;
+  let activeSounds = 0;
+  const MAX_CONCURRENT_SOUNDS = 3;
+
+  function playScoreSound() {
+    if (!isTabActive) return;
+    if (activeSounds >= MAX_CONCURRENT_SOUNDS) return;
+
+    activeSounds++;
+
+    const oscillator = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+
+    oscillator.type = 'square';
+    oscillator.frequency.setValueAtTime(800, audioCtx.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.1);
+
+    gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+
+    oscillator.start();
+    oscillator.stop(audioCtx.currentTime + 0.1);
+
+    setTimeout(() => {
+      activeSounds--;
+    }, 100);
+  }
+
   // --- Initialization ---
   function init() {
     setupHiDPI();
@@ -165,6 +306,12 @@
   function handleInput() {
     if (shouldPause()) return;
 
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    } else if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+
     if (state === 'READY') {
       state = 'PLAYING';
     } else if (state === 'PLAYING') {
@@ -233,7 +380,13 @@
         if (bird.rotation > 90 * Math.PI / 180) bird.rotation = 90 * Math.PI / 180;
       }
 
-      // 2. Update Pipes
+      // 2. Update Background (Parallax scrolling)
+      bgOffsets.clouds += PHYSICS.PIPE_SPEED * 0.3 * scaler;
+      bgOffsets.hills += PHYSICS.PIPE_SPEED * 0.5 * scaler;
+      bgOffsets.trees += PHYSICS.PIPE_SPEED * 0.8 * scaler;
+      bgOffsets.ground += PHYSICS.PIPE_SPEED * scaler;
+
+      // 3. Update Pipes
       spawnTimer += dt;
       if (spawnTimer > PHYSICS.PIPE_SPAWN_RATE) {
         spawnPipe();
@@ -242,13 +395,14 @@
 
       pipes.forEach(pipe => {
         pipe.x -= PHYSICS.PIPE_SPEED * scaler;
-        
+
         // Check passed
         if (!pipe.passed && pipe.x + PHYSICS.PIPE_WIDTH < bird.x) {
           score++;
           pipe.passed = true;
+          playScoreSound();
           if (currentScoreEl) currentScoreEl.textContent = score;
-          
+
           // Difficulty increase? (Optional, not in spec)
         }
       });
@@ -256,7 +410,7 @@
       // Remove off-screen pipes
       pipes = pipes.filter(pipe => pipe.x + PHYSICS.PIPE_WIDTH > -10);
 
-      // 3. Collision Detection
+      // 4. Collision Detection
       checkCollision();
     } else if (state === 'READY') {
       // Bobbing animation
@@ -316,35 +470,95 @@
     if (bestScoreEl) bestScoreEl.textContent = bestScore;
   }
 
+  function drawPipe(ctx, x, topY, bottomY, h, isTop) {
+    // Disable image smoothing for pixel-perfect rendering
+    ctx.imageSmoothingEnabled = false;
+
+    const bodyWidth = PHYSICS.PIPE_WIDTH; // 52
+    const capWidth = bodyWidth + 8; // 60
+    const capHeight = 10;
+    const capOffset = (capWidth - bodyWidth) / 2; // 4px each side
+
+    // Pixel-perfect coordinates
+    const xInt = Math.floor(x);
+    const topInt = Math.floor(topY);
+    const botInt = Math.floor(bottomY);
+
+    // Colors
+    const bodyMainColor = '#22c55e'; // Green
+    const bodyDarkColor = '#16a34a'; // Darker green
+    const capColor = '#22c55e';
+    const borderColor = '#14532d'; // Dark green
+
+    if (isTop) {
+      // Top pipe: cap at bottom (facing gap)
+      const bodyHeight = topInt - capHeight;
+
+      // Pipe body
+      ctx.fillStyle = bodyMainColor;
+      ctx.fillRect(xInt, 0, bodyWidth, bodyHeight);
+
+      // Body detail stripes (pixel art style)
+      ctx.fillStyle = bodyDarkColor;
+      ctx.fillRect(xInt + 10, 0, 5, bodyHeight);
+      ctx.fillRect(xInt + 37, 0, 5, bodyHeight);
+
+      // Pipe cap (wider, at bottom)
+      ctx.fillStyle = capColor;
+      ctx.fillRect(xInt - capOffset, bodyHeight, capWidth, capHeight);
+
+      // Border for body
+      ctx.strokeStyle = borderColor;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(xInt, 0, bodyWidth, bodyHeight);
+
+      // Border for cap
+      ctx.strokeRect(xInt - capOffset, bodyHeight, capWidth, capHeight);
+    } else {
+      // Bottom pipe: cap at top (facing gap)
+      const bodyY = botInt + capHeight;
+      const bodyHeight = h - bodyY;
+
+      // Pipe cap (wider, at top)
+      ctx.fillStyle = capColor;
+      ctx.fillRect(xInt - capOffset, botInt, capWidth, capHeight);
+
+      // Pipe body
+      ctx.fillStyle = bodyMainColor;
+      ctx.fillRect(xInt, bodyY, bodyWidth, bodyHeight);
+
+      // Body detail stripes (pixel art style)
+      ctx.fillStyle = bodyDarkColor;
+      ctx.fillRect(xInt + 10, bodyY, 5, bodyHeight);
+      ctx.fillRect(xInt + 37, bodyY, 5, bodyHeight);
+
+      // Border for cap
+      ctx.strokeStyle = borderColor;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(xInt - capOffset, botInt, capWidth, capHeight);
+
+      // Border for body
+      ctx.strokeRect(xInt, bodyY, bodyWidth, bodyHeight);
+    }
+  }
+
   function draw() {
     // Clear canvas
     const w = canvas.width / dpr;
     const h = canvas.height / dpr;
     ctx.clearRect(0, 0, w, h);
 
-    // Background (Gradient for sky)
-    // Night theme: dark blue
-    const grad = ctx.createLinearGradient(0, 0, 0, h);
-    grad.addColorStop(0, '#0f172a'); // Slate 900
-    grad.addColorStop(1, '#1e293b'); // Slate 800
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, w, h);
+    // Draw pixel-art layered background with parallax scrolling
+    BackgroundRenderer.render(ctx, w, h);
 
-    // Draw Pipes
-    ctx.fillStyle = '#22c55e'; // Green pipes
-    ctx.strokeStyle = '#14532d'; // Dark green border
-    ctx.lineWidth = 2;
-
+    // Draw Pipes with pixel-art caps
     pipes.forEach(pipe => {
       // Top Pipe
-      ctx.fillRect(pipe.x, 0, PHYSICS.PIPE_WIDTH, pipe.y);
-      ctx.strokeRect(pipe.x, 0, PHYSICS.PIPE_WIDTH, pipe.y);
-      
+      drawPipe(ctx, pipe.x, pipe.y, 0, h, true);
+
       // Bottom Pipe
       const bottomY = pipe.y + PHYSICS.PIPE_GAP;
-      const bottomH = h - bottomY;
-      ctx.fillRect(pipe.x, bottomY, PHYSICS.PIPE_WIDTH, bottomH);
-      ctx.strokeRect(pipe.x, bottomY, PHYSICS.PIPE_WIDTH, bottomH);
+      drawPipe(ctx, pipe.x, bottomY, h, h, false);
     });
 
     // Draw Bird
