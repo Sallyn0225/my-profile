@@ -88,17 +88,43 @@
     },
 
     drawClouds: function(ctx, w, h, offset) {
-      ctx.fillStyle = this.colors.clouds;
-      const cloudWidth = 60;
-      const numClouds = Math.ceil(w / cloudWidth) + 2;
+      if (ThemeManager.getCurrentTheme() === 'dark') {
+        // Dark mode: draw moon and stars
+        // Draw moon
+        ctx.fillStyle = this.colors.moon;
+        ctx.beginPath();
+        ctx.arc(w - 60, 60, 25, 0, Math.PI * 2);
+        ctx.fill();
 
-      for (let i = 0; i < numClouds; i++) {
-        const x = Math.floor((i * cloudWidth - offset) % (w + cloudWidth));
-        const y = Math.floor(30 + Math.sin(i * 0.5) * 20);
+        // Draw stars (fixed positions for consistency)
+        ctx.fillStyle = this.colors.stars;
+        const stars = [
+          { x: 40, y: 50, r: 2 },
+          { x: 90, y: 80, r: 1.5 },
+          { x: 140, y: 45, r: 2 },
+          { x: 200, y: 70, r: 1.5 },
+          { x: 250, y: 40, r: 2 }
+        ];
 
-        ctx.fillRect(x, y, Math.floor(cloudWidth * 0.8), Math.floor(cloudWidth * 0.3));
-        ctx.fillRect(x + Math.floor(cloudWidth * 0.2), y - Math.floor(cloudWidth * 0.15), Math.floor(cloudWidth * 0.6), Math.floor(cloudWidth * 0.25));
-        ctx.fillRect(x + Math.floor(cloudWidth * 0.1), y + Math.floor(cloudWidth * 0.05), Math.floor(cloudWidth * 0.7), Math.floor(cloudWidth * 0.2));
+        for (let i = 0; i < stars.length; i++) {
+          ctx.beginPath();
+          ctx.arc(stars[i].x, stars[i].y, stars[i].r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      } else {
+        // Light mode: draw clouds
+        ctx.fillStyle = this.colors.clouds;
+        const cloudWidth = 60;
+        const numClouds = Math.ceil(w / cloudWidth) + 2;
+
+        for (let i = 0; i < numClouds; i++) {
+          const x = Math.floor((i * cloudWidth - offset) % (w + cloudWidth));
+          const y = Math.floor(30 + Math.sin(i * 0.5) * 20);
+
+          ctx.fillRect(x, y, Math.floor(cloudWidth * 0.8), Math.floor(cloudWidth * 0.3));
+          ctx.fillRect(x + Math.floor(cloudWidth * 0.2), y - Math.floor(cloudWidth * 0.15), Math.floor(cloudWidth * 0.6), Math.floor(cloudWidth * 0.25));
+          ctx.fillRect(x + Math.floor(cloudWidth * 0.1), y + Math.floor(cloudWidth * 0.05), Math.floor(cloudWidth * 0.7), Math.floor(cloudWidth * 0.2));
+        }
       }
     },
 
@@ -170,6 +196,49 @@
     }
   };
 
+  // --- Theme Manager Module ---
+  const ThemeManager = {
+    themes: {
+      light: {
+        sky: ['#87CEEB', '#4682B4'],
+        clouds: '#FFFFFF',
+        hills: ['#9ACD32', '#6B8E23'],
+        trees: ['#2F4F2F', '#1C3D1C'],
+        ground: ['#7CFC00', '#32CD32']
+      },
+      dark: {
+        sky: ['#0f172a', '#1e293b'],
+        moon: '#FFFACD',
+        stars: '#FFFFFF',
+        hills: ['#4B0082', '#2F4F4F'],
+        trees: ['#1C1C1C', '#0A0A0A'],
+        ground: ['#2F4F2F', '#1C3D1C']
+      }
+    },
+
+    currentTheme: 'light',
+
+    getCurrentTheme: function() {
+      return this.currentTheme;
+    },
+
+    applyTheme: function() {
+      const theme = this.themes[this.currentTheme];
+      BackgroundRenderer.colors = theme;
+    },
+
+    init: function() {
+      const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      this.currentTheme = darkModeQuery.matches ? 'dark' : 'light';
+      this.applyTheme();
+
+      darkModeQuery.addEventListener('change', (e) => {
+        this.currentTheme = e.matches ? 'dark' : 'light';
+        this.applyTheme();
+      });
+    }
+  };
+
   // --- Sound Manager ---
   let audioCtx = null;
   let activeSounds = 0;
@@ -207,7 +276,8 @@
     setupHiDPI();
     setupEventListeners();
     updateBestScoreDisplay();
-    
+    ThemeManager.init();
+
     // Check initial reduced motion state
     if (prefersReducedMotion && !motionOverride) {
       if (reducedMotionWarning) reducedMotionWarning.classList.remove('hidden');
