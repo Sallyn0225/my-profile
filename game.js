@@ -112,7 +112,7 @@
 
     // 3. Restart Button
     if (restartBtn) {
-      restartBtn.addEventListener('click', resetGame);
+      restartBtn.addEventListener('click', restartGame);
     }
     // Also allow clicking overlay text to restart if needed, but button is clear.
 
@@ -146,6 +146,14 @@
       });
     });
     observer.observe(document.documentElement, { attributes: true });
+
+    // 7. Window Resize
+    // Ensure canvas internal resolution matches CSS size (prevent blurry rendering)
+    window.addEventListener('resize', () => {
+      setupHiDPI();
+      // Force a single draw in case the loop is paused
+      requestAnimationFrame(() => draw());
+    });
   }
 
   function shouldPause() {
@@ -162,10 +170,8 @@
     } else if (state === 'PLAYING') {
       bird.velocity = PHYSICS.JUMP;
     } else if (state === 'GAME_OVER') {
-      // Input during game over does nothing, user must click restart button
-      // Or we could allow click to restart:
-      // resetGame(); 
-      // But we have a button for that.
+      // Allow restarting by clicking/tapping the canvas or pressing Space.
+      restartGame();
     }
   }
 
@@ -182,10 +188,13 @@
     // Reset UI
     if (currentScoreEl) currentScoreEl.textContent = '0';
     if (gameOverOverlay) gameOverOverlay.classList.add('hidden');
-    if (restartBtn) restartBtn.classList.add('hidden'); // Assuming style hides it, or we toggle class
-    // Task 1 didn't specify restart btn visibility class, but usually it's shown on game over.
-    // Let's assume we need to toggle it.
-    if (restartBtn) restartBtn.style.display = 'none'; // Explicitly hide
+    if (restartBtn) restartBtn.classList.add('hidden');
+  }
+
+  function restartGame() {
+    resetGame();
+    state = 'PLAYING';
+    bird.velocity = PHYSICS.JUMP;
   }
 
   function spawnPipe() {
@@ -300,7 +309,7 @@
 
     // Show Game Over UI
     if (gameOverOverlay) gameOverOverlay.classList.remove('hidden');
-    if (restartBtn) restartBtn.style.display = 'block';
+    if (restartBtn) restartBtn.classList.remove('hidden');
   }
 
   function updateBestScoreDisplay() {
