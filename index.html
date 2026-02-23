@@ -114,6 +114,74 @@
         </section>
     </main>
 
+    <section class="cardbook-section fade-in">
+        <h2 class="cardbook-title" data-i18n="cardbook.title">赛博名片收集册</h2>
+        <div class="cardbook-viewport">
+            <div class="cardbook-spine"></div>
+            <div class="cardbook-page cardbook-page--active" data-page="0">
+                <p class="cardbook-empty" data-i18n="cardbook.empty">还没有名片，来交换一张吧！</p>
+            </div>
+        </div>
+        <div class="cardbook-nav">
+            <button class="cardbook-nav-btn cardbook-prev" aria-label="Previous page" data-i18n-attr="aria-label:cardbook.prevPage" disabled>
+                <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <span class="cardbook-page-indicator">1 / 1</span>
+            <button class="cardbook-nav-btn cardbook-next" aria-label="Next page" data-i18n-attr="aria-label:cardbook.nextPage" disabled>
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
+        </div>
+        <button class="cardbook-upload-btn" data-i18n="cardbook.upload">交换名片</button>
+    </section>
+
+    <!-- Card Upload Modal -->
+    <div class="cardbook-modal" role="dialog" aria-modal="true" aria-labelledby="cardbook-modal-title" hidden>
+        <div class="cardbook-modal-backdrop"></div>
+        <div class="cardbook-modal-content">
+            <button class="cardbook-modal-close" aria-label="Close" data-i18n-attr="aria-label:cardbook.close">&times;</button>
+            <h3 id="cardbook-modal-title" data-i18n="cardbook.uploadTitle">上传名片</h3>
+
+            <!-- Step 1: File select -->
+            <div class="cardbook-step cardbook-step--file active">
+                <label class="cardbook-file-label">
+                    <i class="fa-solid fa-image"></i>
+                    <span data-i18n="cardbook.selectFile">选择图片</span>
+                    <input type="file" accept="image/*" class="cardbook-file-input" />
+                </label>
+            </div>
+
+            <!-- Step 2: Orientation -->
+            <div class="cardbook-step cardbook-step--orient">
+                <p data-i18n="cardbook.chooseOrientation">选择名片方向</p>
+                <div class="cardbook-orient-options">
+                    <button class="cardbook-orient-btn" data-orient="landscape">
+                        <span class="cardbook-orient-icon cardbook-orient-icon--landscape"></span>
+                        <span data-i18n="cardbook.landscape">横向</span>
+                    </button>
+                    <button class="cardbook-orient-btn" data-orient="portrait">
+                        <span class="cardbook-orient-icon cardbook-orient-icon--portrait"></span>
+                        <span data-i18n="cardbook.portrait">纵向</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 3: Crop -->
+            <div class="cardbook-step cardbook-step--crop">
+                <div class="cardbook-crop-container">
+                    <canvas class="cardbook-crop-canvas"></canvas>
+                    <div class="cardbook-crop-box"></div>
+                </div>
+                <button class="cardbook-confirm-btn" data-i18n="cardbook.confirm">确认上传</button>
+            </div>
+
+            <!-- Upload progress -->
+            <div class="cardbook-step cardbook-step--uploading">
+                <div class="cardbook-spinner"></div>
+                <p data-i18n="cardbook.uploading">上传中…</p>
+            </div>
+        </div>
+    </div>
+
     <section class="game-section fade-in">
         <div class="game-container">
             <canvas id="game-canvas" width="320" height="480"></canvas>
@@ -145,5 +213,6 @@
     <script src="i18n.js"></script>
     <script src="script.js"></script>
     <script src="game.js"></script>
+    <script src="cardbook.js"></script>
 </body>
 </html>

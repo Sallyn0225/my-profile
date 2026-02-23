@@ -1,0 +1,12 @@
+name = "cardbook-api"
+main = "src/index.js"
+compatibility_date = "2024-12-01"
+
+# R2 bucket binding — create with: wrangler r2 bucket create cardbook-cards
+[[r2_buckets]]
+binding = "CARDS_BUCKET"
+bucket_name = "cardbook-cards"
+
+# Optional: set allowed origins for CORS
+# [vars]
+# ALLOWED_ORIGIN = "https://your-site.pages.dev"
