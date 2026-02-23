@@ -5,7 +5,7 @@
   'use strict';
 
   // ── Configuration ──────────────────────────────────────────────
-  const API_BASE = '';
+  const API_BASE = 'https://cardbook-api.z1921531571.workers.dev';
   const CARDS_PER_PAGE = 3;
   const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
   const LANDSCAPE_SIZE = { w: 900, h: 550 };
