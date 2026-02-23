@@ -118,7 +118,8 @@
         const numClouds = Math.ceil(w / cloudWidth) + 2;
 
         for (let i = 0; i < numClouds; i++) {
-          const x = Math.floor((i * cloudWidth - offset) % (w + cloudWidth));
+          const mod = w + cloudWidth;
+          const x = Math.floor(((i * cloudWidth - offset) % mod + mod) % mod - cloudWidth);
           const y = Math.floor(30 + Math.sin(i * 0.5) * 20);
 
           ctx.fillRect(x, y, Math.floor(cloudWidth * 0.8), Math.floor(cloudWidth * 0.3));
@@ -134,7 +135,8 @@
       const hillBaseY = h - 80;
 
       for (let i = 0; i < numHills; i++) {
-        const x = Math.floor((i * hillWidth - offset) % (w + hillWidth));
+        const mod = w + hillWidth;
+        const x = Math.floor(((i * hillWidth - offset) % mod + mod) % mod - hillWidth);
         const hillHeight = Math.floor(40 + Math.sin(i * 0.7) * 20);
 
         ctx.fillStyle = this.colors.hills[i % 2];
@@ -153,7 +155,8 @@
       const treeBaseY = h - 80;
 
       for (let i = 0; i < numTrees; i++) {
-        const x = Math.floor((i * treeWidth - offset) % (w + treeWidth));
+        const mod = w + treeWidth;
+        const x = Math.floor(((i * treeWidth - offset) % mod + mod) % mod - treeWidth);
         const treeHeight = Math.floor(35 + Math.sin(i * 0.9) * 15);
 
         ctx.fillStyle = this.colors.trees[i % 2];
@@ -179,7 +182,8 @@
 
       ctx.fillStyle = this.colors.ground[1];
       for (let i = 0; i < numPatterns; i++) {
-        const x = Math.floor((i * patternWidth - offset) % (w + patternWidth));
+        const mod = w + patternWidth;
+        const x = Math.floor(((i * patternWidth - offset) % mod + mod) % mod - patternWidth);
         ctx.fillRect(x, h - groundHeight + 5, Math.floor(patternWidth / 2), 10);
         ctx.fillRect(x + Math.floor(patternWidth / 2), h - groundHeight + 20, Math.floor(patternWidth / 2), 8);
       }
