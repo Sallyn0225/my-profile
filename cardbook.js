@@ -5,7 +5,6 @@
   'use strict';
 
   // ── Configuration ──────────────────────────────────────────────
-  // After deploying the Worker, replace this with your Worker URL
   const API_BASE = '';
   const CARDS_PER_PAGE = 3;
   const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
@@ -15,40 +14,55 @@
   const SWIPE_THRESHOLD = 50;
 
   // ── State ──────────────────────────────────────────────────────
-  let cards = [];
-  let currentPage = 0;
-  let totalPages = 1;
-  let cursor = null;
-  let hasMore = true;
-  let loading = false;
+  var cards = [];
+  var currentSpread = 0;  // desktop: spread index (2 pages per spread)
+  var currentPage = 0;    // mobile: single page index
+  var totalPages = 1;
+  var cursor = null;
+  var hasMore = true;
+  var loading = false;
 
   // Upload state
-  let uploadFile = null;
-  let uploadOrientation = null;
-  let cropImg = null;
-  let cropBox = { x: 0, y: 0, w: 0, h: 0 };
-  let dragStart = null;
+  var uploadFile = null;
+  var uploadOrientation = null;
+  var cropImg = null;
+  var cropBox = { x: 0, y: 0, w: 0, h: 0 };
+  var cropMinW = 0, cropMaxW = 0;
+  var dragStart = null;
+
+  // ── Responsive detection ─────────────────────────────────────
+  var mobileQuery = window.matchMedia('(max-width: 640px)');
+  var isMobile = mobileQuery.matches;
+  mobileQuery.addEventListener('change', function(e) {
+    isMobile = e.matches;
+    syncFromSpread();
+    renderPage();
+  });
 
   // ── DOM refs ───────────────────────────────────────────────────
-  const viewport = document.querySelector('.cardbook-viewport');
-  const prevBtn = document.querySelector('.cardbook-prev');
-  const nextBtn = document.querySelector('.cardbook-next');
-  const pageIndicator = document.querySelector('.cardbook-page-indicator');
-  const uploadBtn = document.querySelector('.cardbook-upload-btn');
-  const modal = document.querySelector('.cardbook-modal');
-  const modalBackdrop = document.querySelector('.cardbook-modal-backdrop');
-  const modalClose = document.querySelector('.cardbook-modal-close');
-  const fileInput = document.querySelector('.cardbook-file-input');
-  const cropCanvas = document.querySelector('.cardbook-crop-canvas');
-  const cropBoxEl = document.querySelector('.cardbook-crop-box');
-  const confirmBtn = document.querySelector('.cardbook-confirm-btn');
-  const steps = {
+  var book = document.querySelector('.cardbook-book');
+  var viewportLeft = document.querySelector('.cardbook-viewport--left');
+  var viewportRight = document.querySelector('.cardbook-viewport--right');
+  var prevBtn = document.querySelector('.cardbook-prev');
+  var nextBtn = document.querySelector('.cardbook-next');
+  var pageIndicator = document.querySelector('.cardbook-page-indicator');
+  var uploadBtn = document.querySelector('.cardbook-upload-btn');
+  var modal = document.querySelector('.cardbook-modal');
+  var modalBackdrop = document.querySelector('.cardbook-modal-backdrop');
+  var modalClose = document.querySelector('.cardbook-modal-close');
+
+  var fileInput = document.querySelector('.cardbook-file-input');
+  var cropCanvas = document.querySelector('.cardbook-crop-canvas');
+  var cropBoxEl = document.querySelector('.cardbook-crop-box');
+  var zoomSlider = document.querySelector('.cardbook-zoom-slider');
+  var confirmBtn = document.querySelector('.cardbook-confirm-btn');
+  var steps = {
     file: document.querySelector('.cardbook-step--file'),
     orient: document.querySelector('.cardbook-step--orient'),
     crop: document.querySelector('.cardbook-step--crop'),
     uploading: document.querySelector('.cardbook-step--uploading')
   };
-  const orientBtns = document.querySelectorAll('.cardbook-orient-btn');
+  var orientBtns = document.querySelectorAll('.cardbook-orient-btn');
 
   // ── Helpers ────────────────────────────────────────────────────
 
@@ -83,6 +97,18 @@
     document.body.style.overflow = '';
   }
 
+  // Sync currentPage from currentSpread and vice versa
+  function syncFromSpread() {
+    if (isMobile) {
+      currentPage = currentSpread * 2;
+    }
+  }
+
+  function syncFromPage() {
+    currentSpread = Math.floor(currentPage / 2);
+  }
+
+
   // ── Page rendering ─────────────────────────────────────────────
 
   function getPageCards(pageIndex) {
@@ -90,25 +116,19 @@
     return cards.slice(start, start + CARDS_PER_PAGE);
   }
 
-  function renderPage() {
-    totalPages = Math.max(1, Math.ceil(cards.length / CARDS_PER_PAGE));
-    if (currentPage >= totalPages) currentPage = totalPages - 1;
-    if (currentPage < 0) currentPage = 0;
-
-    // Clear existing pages (keep spine)
-    var existingPages = viewport.querySelectorAll('.cardbook-page');
-    existingPages.forEach(function(p) { p.remove(); });
-
-    var pageCards = getPageCards(currentPage);
+  function buildPageEl(pageIndex) {
+    var pageCards = getPageCards(pageIndex);
     var page = document.createElement('div');
     page.className = 'cardbook-page cardbook-page--active';
 
-    if (pageCards.length === 0) {
+    if (pageCards.length === 0 && pageIndex === 0) {
       var empty = document.createElement('p');
       empty.className = 'cardbook-empty';
       empty.setAttribute('data-i18n', 'cardbook.empty');
       empty.textContent = '还没有名片，来交换一张吧！';
       page.appendChild(empty);
+    } else if (pageCards.length === 0) {
+      // Empty page beyond content — leave blank
     } else {
       pageCards.forEach(function(card) {
         var div = document.createElement('div');
@@ -120,73 +140,73 @@
         img.loading = 'lazy';
         img.decoding = 'async';
         div.appendChild(img);
+        div.addEventListener('click', function() { openLightbox(card.imageUrl); });
         page.appendChild(div);
       });
     }
-
-    viewport.appendChild(page);
-
-    // Update nav
-    prevBtn.disabled = currentPage <= 0;
-    nextBtn.disabled = currentPage >= totalPages - 1 && !hasMore;
-    pageIndicator.textContent = (currentPage + 1) + ' / ' + totalPages;
+    return page;
   }
+
+  function clearViewport(vp) {
+    var pages = vp.querySelectorAll('.cardbook-page');
+    pages.forEach(function(p) { p.remove(); });
+  }
+
+  function renderPage() {
+    totalPages = Math.max(1, Math.ceil(cards.length / CARDS_PER_PAGE));
+
+    if (isMobile) {
+      // Single page mode — only use right viewport
+      if (currentPage >= totalPages) currentPage = totalPages - 1;
+      if (currentPage < 0) currentPage = 0;
+      syncFromPage();
+
+      clearViewport(viewportRight);
+      viewportRight.appendChild(buildPageEl(currentPage));
+
+      prevBtn.disabled = currentPage <= 0;
+      nextBtn.disabled = currentPage >= totalPages - 1 && !hasMore;
+      pageIndicator.textContent = (currentPage + 1) + ' / ' + totalPages;
+    } else {
+      // Desktop spread mode
+      var totalSpreads = Math.max(1, Math.ceil(totalPages / 2));
+      if (currentSpread >= totalSpreads) currentSpread = totalSpreads - 1;
+      if (currentSpread < 0) currentSpread = 0;
+
+      var leftIdx = currentSpread * 2;
+      var rightIdx = leftIdx + 1;
+
+      clearViewport(viewportLeft);
+      clearViewport(viewportRight);
+
+      viewportLeft.appendChild(buildPageEl(leftIdx));
+      if (rightIdx < totalPages) {
+        viewportRight.appendChild(buildPageEl(rightIdx));
+      } else {
+        // Empty right page
+        var emptyPage = document.createElement('div');
+        emptyPage.className = 'cardbook-page cardbook-page--active';
+        viewportRight.appendChild(emptyPage);
+      }
+
+      prevBtn.disabled = currentSpread <= 0;
+      nextBtn.disabled = currentSpread >= totalSpreads - 1 && !hasMore;
+      pageIndicator.textContent = (currentSpread + 1) + ' / ' + totalSpreads;
+    }
+  }
+
 
   // ── Page flip animation ────────────────────────────────────────
 
   var isFlipping = false;
   var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  function flipToPage(newPage) {
-    if (isFlipping || newPage === currentPage) return;
-    if (newPage < 0 || (newPage >= totalPages && !hasMore)) return;
+  function flipPageInViewport(vp, newPageEl, goingForward) {
+    var activePage = vp.querySelector('.cardbook-page--active');
 
-    // If we need more cards and are going forward, fetch them
-    if (newPage >= totalPages && hasMore) {
-      fetchCards().then(function() {
-        totalPages = Math.max(1, Math.ceil(cards.length / CARDS_PER_PAGE));
-        if (newPage < totalPages) {
-          flipToPage(newPage);
-        }
-      });
-      return;
-    }
-
-    isFlipping = true;
-    var goingForward = newPage > currentPage;
-
-    // Build the new page
-    var newPageCards = getPageCards(newPage);
-    var newPageEl = document.createElement('div');
-    newPageEl.className = 'cardbook-page cardbook-page--next';
-
-    if (newPageCards.length === 0) {
-      var empty = document.createElement('p');
-      empty.className = 'cardbook-empty';
-      empty.setAttribute('data-i18n', 'cardbook.empty');
-      empty.textContent = '还没有名片，来交换一张吧！';
-      newPageEl.appendChild(empty);
-    } else {
-      newPageCards.forEach(function(card) {
-        var div = document.createElement('div');
-        var orient = card.orientation || 'landscape';
-        div.className = 'cardbook-card cardbook-card--' + orient;
-        var img = document.createElement('img');
-        img.src = card.imageUrl;
-        img.alt = 'Card';
-        img.loading = 'lazy';
-        img.decoding = 'async';
-        div.appendChild(img);
-        newPageEl.appendChild(div);
-      });
-    }
-
-    viewport.appendChild(newPageEl);
-
-    var activePage = viewport.querySelector('.cardbook-page--active');
+    vp.appendChild(newPageEl);
 
     if (reducedMotion) {
-      // Simple opacity fade
       if (activePage) {
         activePage.style.opacity = '0';
         setTimeout(function() { activePage.remove(); }, 300);
@@ -198,37 +218,157 @@
         newPageEl.style.opacity = '1';
       });
     } else {
-      // 3D flip
-      if (activePage && goingForward) {
+      if (activePage) {
         activePage.classList.remove('cardbook-page--active');
-        activePage.classList.add('cardbook-page--flipped');
-      } else if (activePage) {
-        activePage.style.opacity = '0';
+        if (goingForward) {
+          activePage.classList.add('cardbook-page--flipped');
+        } else {
+          activePage.classList.add('cardbook-page--unflipped');
+        }
       }
 
       newPageEl.classList.remove('cardbook-page--next');
       newPageEl.classList.add('cardbook-page--active');
 
-      // Clean up old page after transition
       if (activePage) {
         activePage.addEventListener('transitionend', function handler() {
           activePage.removeEventListener('transitionend', handler);
           activePage.remove();
         });
-        // Fallback cleanup
         setTimeout(function() {
           if (activePage.parentNode) activePage.remove();
         }, 800);
       }
     }
+  }
+
+  function navigateForward() {
+    if (isMobile) {
+      flipToMobilePage(currentPage + 1);
+    } else {
+      flipToSpread(currentSpread + 1);
+    }
+  }
+
+  function navigateBackward() {
+    if (isMobile) {
+      flipToMobilePage(currentPage - 1);
+    } else {
+      flipToSpread(currentSpread - 1);
+    }
+  }
+
+
+  function flipToMobilePage(newPage) {
+    if (isFlipping || newPage === currentPage) return;
+    if (newPage < 0 || (newPage >= totalPages && !hasMore)) return;
+
+    if (newPage >= totalPages && hasMore) {
+      fetchCards().then(function() {
+        totalPages = Math.max(1, Math.ceil(cards.length / CARDS_PER_PAGE));
+        if (newPage < totalPages) flipToMobilePage(newPage);
+      });
+      return;
+    }
+
+    isFlipping = true;
+    var goingForward = newPage > currentPage;
+
+    var newPageEl = buildPageEl(newPage);
+    newPageEl.className = 'cardbook-page cardbook-page--next';
+    flipPageInViewport(viewportRight, newPageEl, goingForward);
 
     currentPage = newPage;
+    syncFromPage();
     prevBtn.disabled = currentPage <= 0;
     nextBtn.disabled = currentPage >= totalPages - 1 && !hasMore;
     pageIndicator.textContent = (currentPage + 1) + ' / ' + totalPages;
 
     setTimeout(function() { isFlipping = false; }, reducedMotion ? 350 : 750);
   }
+
+  function flipToSpread(newSpread) {
+    if (isFlipping || newSpread === currentSpread) return;
+    var totalSpreads = Math.max(1, Math.ceil(totalPages / 2));
+    if (newSpread < 0 || (newSpread >= totalSpreads && !hasMore)) return;
+
+    if (newSpread >= totalSpreads && hasMore) {
+      fetchCards().then(function() {
+        totalPages = Math.max(1, Math.ceil(cards.length / CARDS_PER_PAGE));
+        var ts = Math.max(1, Math.ceil(totalPages / 2));
+        if (newSpread < ts) flipToSpread(newSpread);
+      });
+      return;
+    }
+
+    isFlipping = true;
+    var goingForward = newSpread > currentSpread;
+
+    var leftIdx = newSpread * 2;
+    var rightIdx = leftIdx + 1;
+
+    // Build new pages
+    var newLeftEl = buildPageEl(leftIdx);
+    newLeftEl.className = 'cardbook-page cardbook-page--next';
+
+    var newRightEl;
+    if (rightIdx < totalPages) {
+      newRightEl = buildPageEl(rightIdx);
+    } else {
+      newRightEl = document.createElement('div');
+      newRightEl.className = 'cardbook-page';
+    }
+    newRightEl.className = 'cardbook-page cardbook-page--next';
+
+    flipPageInViewport(viewportLeft, newLeftEl, goingForward);
+    flipPageInViewport(viewportRight, newRightEl, goingForward);
+
+    currentSpread = newSpread;
+    var ts2 = Math.max(1, Math.ceil(totalPages / 2));
+    prevBtn.disabled = currentSpread <= 0;
+    nextBtn.disabled = currentSpread >= ts2 - 1 && !hasMore;
+    pageIndicator.textContent = (currentSpread + 1) + ' / ' + ts2;
+
+    setTimeout(function() { isFlipping = false; }, reducedMotion ? 350 : 750);
+  }
+
+
+  // ── Lightbox ───────────────────────────────────────────────────
+
+  var lightboxEl = null;
+
+  function openLightbox(imageUrl) {
+    if (lightboxEl) return;
+    lightboxEl = document.createElement('div');
+    lightboxEl.className = 'cardbook-lightbox';
+    var img = document.createElement('img');
+    img.src = imageUrl;
+    img.alt = 'Card full view';
+    lightboxEl.appendChild(img);
+    document.body.appendChild(lightboxEl);
+    document.body.style.overflow = 'hidden';
+
+    requestAnimationFrame(function() {
+      lightboxEl.classList.add('cardbook-lightbox--visible');
+    });
+
+    lightboxEl.addEventListener('click', closeLightbox);
+  }
+
+  function closeLightbox() {
+    if (!lightboxEl) return;
+    lightboxEl.classList.remove('cardbook-lightbox--visible');
+    var el = lightboxEl;
+    setTimeout(function() {
+      if (el.parentNode) el.remove();
+    }, 300);
+    lightboxEl = null;
+    // Only restore overflow if modal is also closed
+    if (modal.hidden) {
+      document.body.style.overflow = '';
+    }
+  }
+
 
   // ── Image crop logic ───────────────────────────────────────────
 
@@ -242,7 +382,6 @@
       ? LANDSCAPE_SIZE.w / LANDSCAPE_SIZE.h
       : PORTRAIT_SIZE.w / PORTRAIT_SIZE.h;
 
-    // Size canvas to fit modal width
     var containerWidth = cropCanvas.parentElement.clientWidth;
     var imgRatio = cropImg.naturalWidth / cropImg.naturalHeight;
     var drawW, drawH;
@@ -265,7 +404,6 @@
 
     cropCtx.drawImage(cropImg, 0, 0, drawW, drawH);
 
-    // Init crop box centered
     var boxW, boxH;
     if (targetRatio > 1) {
       boxW = drawW * 0.8;
@@ -283,11 +421,15 @@
       }
     }
 
+    cropMaxW = Math.min(drawW, drawH * targetRatio);
+    cropMinW = cropMaxW * 0.2;
+
     cropBox.w = boxW;
     cropBox.h = boxH;
     cropBox.x = (drawW - boxW) / 2;
     cropBox.y = (drawH - boxH) / 2;
 
+    syncSlider();
     updateCropBox();
   }
 
@@ -303,11 +445,9 @@
     cropBox.y = Math.max(0, Math.min(cropBox.y, cropCanvas.height - cropBox.h));
   }
 
-  // Drag crop box (mouse + touch)
   function onCropPointerDown(e) {
     e.preventDefault();
     var pt = e.touches ? e.touches[0] : e;
-    var rect = cropCanvas.getBoundingClientRect();
     dragStart = {
       px: pt.clientX,
       py: pt.clientY,
@@ -337,6 +477,83 @@
   document.addEventListener('mouseup', onCropPointerUp);
   document.addEventListener('touchend', onCropPointerUp);
 
+
+  // ── Zoom: resize crop box keeping aspect ratio ───────────────
+
+  function syncSlider() {
+    if (!zoomSlider || cropMaxW <= cropMinW) return;
+    var t = (cropBox.w - cropMinW) / (cropMaxW - cropMinW);
+    zoomSlider.value = (1 - t) * 100;
+  }
+
+  function applyCropZoom(newW) {
+    var targetRatio = uploadOrientation === 'landscape'
+      ? LANDSCAPE_SIZE.w / LANDSCAPE_SIZE.h
+      : PORTRAIT_SIZE.w / PORTRAIT_SIZE.h;
+
+    newW = Math.max(cropMinW, Math.min(cropMaxW, newW));
+    var newH = newW / targetRatio;
+
+    var cx = cropBox.x + cropBox.w / 2;
+    var cy = cropBox.y + cropBox.h / 2;
+    cropBox.w = newW;
+    cropBox.h = newH;
+    cropBox.x = cx - newW / 2;
+    cropBox.y = cy - newH / 2;
+
+    clampCropBox();
+    updateCropBox();
+  }
+
+  if (zoomSlider) {
+    zoomSlider.addEventListener('input', function() {
+      var t = 1 - (parseFloat(zoomSlider.value) / 100);
+      var newW = cropMinW + t * (cropMaxW - cropMinW);
+      applyCropZoom(newW);
+    });
+  }
+
+  cropCanvas.parentElement.addEventListener('wheel', function(e) {
+    if (!cropImg) return;
+    e.preventDefault();
+    var delta = e.deltaY > 0 ? -0.05 : 0.05;
+    var newW = cropBox.w + delta * (cropMaxW - cropMinW);
+    applyCropZoom(newW);
+    syncSlider();
+  }, { passive: false });
+
+  var pinchStartDist = 0;
+  var pinchStartW = 0;
+
+  cropCanvas.parentElement.addEventListener('touchstart', function(e) {
+    if (e.touches.length === 2) {
+      e.preventDefault();
+      var dx = e.touches[0].clientX - e.touches[1].clientX;
+      var dy = e.touches[0].clientY - e.touches[1].clientY;
+      pinchStartDist = Math.hypot(dx, dy);
+      pinchStartW = cropBox.w;
+    }
+  }, { passive: false });
+
+  cropCanvas.parentElement.addEventListener('touchmove', function(e) {
+    if (e.touches.length === 2 && pinchStartDist > 0) {
+      e.preventDefault();
+      var dx = e.touches[0].clientX - e.touches[1].clientX;
+      var dy = e.touches[0].clientY - e.touches[1].clientY;
+      var dist = Math.hypot(dx, dy);
+      var scale = dist / pinchStartDist;
+      applyCropZoom(pinchStartW * scale);
+      syncSlider();
+    }
+  }, { passive: false });
+
+  cropCanvas.parentElement.addEventListener('touchend', function(e) {
+    if (e.touches.length < 2) {
+      pinchStartDist = 0;
+    }
+  });
+
+
   // ── Canvas export & upload ─────────────────────────────────────
 
   function exportCroppedImage(callback) {
@@ -346,7 +563,6 @@
     outCanvas.height = targetSize.h;
     var ctx = outCanvas.getContext('2d');
 
-    // Source rect in original image coords
     var sx = cropBox.x * canvasScale;
     var sy = cropBox.y * canvasScale;
     var sw = cropBox.w * canvasScale;
@@ -361,7 +577,6 @@
 
   function uploadCard(blob) {
     if (!API_BASE) {
-      // Demo mode: create local object URL
       var url = URL.createObjectURL(blob);
       cards.push({
         id: 'local-' + Date.now(),
@@ -395,13 +610,13 @@
         imageUrl: API_BASE + '/api/cards/image/' + data.key
       });
       currentPage = 0;
+      currentSpread = 0;
       renderPage();
       closeModal();
     })
     .catch(function(err) {
       console.error('Card upload error:', err);
       closeModal();
-      // Could show a toast here
     });
   }
 
@@ -438,43 +653,48 @@
       });
   }
 
+
   // ── Event bindings ─────────────────────────────────────────────
 
   // Navigation
-  prevBtn.addEventListener('click', function() { flipToPage(currentPage - 1); });
-  nextBtn.addEventListener('click', function() { flipToPage(currentPage + 1); });
+  prevBtn.addEventListener('click', function() { navigateBackward(); });
+  nextBtn.addEventListener('click', function() { navigateForward(); });
 
   // Keyboard navigation
   document.addEventListener('keydown', function(e) {
+    // Close lightbox on Escape
+    if (e.key === 'Escape' && lightboxEl) {
+      closeLightbox();
+      return;
+    }
     if (!modal.hidden) {
       if (e.key === 'Escape') closeModal();
       return;
     }
     // Only handle arrows when cardbook section is in view
-    var rect = viewport.getBoundingClientRect();
+    var rect = book.getBoundingClientRect();
     var inView = rect.top < window.innerHeight && rect.bottom > 0;
     if (!inView) return;
 
-    if (e.key === 'ArrowLeft') flipToPage(currentPage - 1);
-    if (e.key === 'ArrowRight') flipToPage(currentPage + 1);
+    if (e.key === 'ArrowLeft') navigateBackward();
+    if (e.key === 'ArrowRight') navigateForward();
   });
 
-  // Touch swipe on viewport
+  // Touch swipe on book
   var touchStartX = 0;
   var touchStartY = 0;
 
-  viewport.addEventListener('touchstart', function(e) {
+  book.addEventListener('touchstart', function(e) {
     touchStartX = e.touches[0].clientX;
     touchStartY = e.touches[0].clientY;
   }, { passive: true });
 
-  viewport.addEventListener('touchend', function(e) {
+  book.addEventListener('touchend', function(e) {
     var dx = e.changedTouches[0].clientX - touchStartX;
     var dy = e.changedTouches[0].clientY - touchStartY;
-    // Only horizontal swipes
     if (Math.abs(dx) > SWIPE_THRESHOLD && Math.abs(dx) > Math.abs(dy)) {
-      if (dx < 0) flipToPage(currentPage + 1);
-      else flipToPage(currentPage - 1);
+      if (dx < 0) navigateForward();
+      else navigateBackward();
     }
   }, { passive: true });
 
@@ -503,13 +723,11 @@
   orientBtns.forEach(function(btn) {
     btn.addEventListener('click', function() {
       uploadOrientation = btn.getAttribute('data-orient');
-      // Load image for cropping
       var reader = new FileReader();
       reader.onload = function(ev) {
         cropImg = new Image();
         cropImg.onload = function() {
           showStep('crop');
-          // Wait for DOM to update before measuring
           requestAnimationFrame(function() { initCrop(); });
         };
         cropImg.src = ev.target.result;
@@ -527,7 +745,6 @@
 
   // ── Init ───────────────────────────────────────────────────────
 
-  // Load cards from API on startup
   if (API_BASE) {
     fetchCards().then(function() { renderPage(); });
   } else {

@@ -116,10 +116,13 @@
 
     <section class="cardbook-section fade-in">
         <h2 class="cardbook-title" data-i18n="cardbook.title">赛博名片收集册</h2>
-        <div class="cardbook-viewport">
+        <div class="cardbook-book">
+            <div class="cardbook-viewport cardbook-viewport--left">
+                <!-- left page rendered by JS -->
+            </div>
             <div class="cardbook-spine"></div>
-            <div class="cardbook-page cardbook-page--active" data-page="0">
-                <p class="cardbook-empty" data-i18n="cardbook.empty">还没有名片，来交换一张吧！</p>
+            <div class="cardbook-viewport cardbook-viewport--right">
+                <!-- right page rendered by JS -->
             </div>
         </div>
         <div class="cardbook-nav">
@@ -170,6 +173,11 @@
                 <div class="cardbook-crop-container">
                     <canvas class="cardbook-crop-canvas"></canvas>
                     <div class="cardbook-crop-box"></div>
+                </div>
+                <div class="cardbook-zoom-bar">
+                    <i class="fa-solid fa-magnifying-glass-minus" aria-hidden="true"></i>
+                    <input type="range" class="cardbook-zoom-slider" min="0" max="100" value="50" />
+                    <i class="fa-solid fa-magnifying-glass-plus" aria-hidden="true"></i>
                 </div>
                 <button class="cardbook-confirm-btn" data-i18n="cardbook.confirm">确认上传</button>
             </div>
